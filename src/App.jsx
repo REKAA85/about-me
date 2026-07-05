@@ -11,7 +11,7 @@ const BOOT_KEY = 'rekaa-booted'
 const PROFILE = {
   handle: 'ROGUE TEST SUBJECT',
   role: 'Variety / FPS Streamer',
-  status: 'Offline', // 'Online' | 'Offline'
+  status: 'Offline', // 'Online' | 'Offline t' 
   tag: 'VTUBER / STREAMER',
 }
 
