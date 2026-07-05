@@ -1,0 +1,57 @@
+@use 'variables' as *;
+
+@mixin mobile-only {
+  @media (max-width: #{$bp-sm - 1px}) {
+    @content;
+  }
+}
+
+@mixin from-sm {
+  @media (min-width: $bp-sm) {
+    @content;
+  }
+}
+
+@mixin from-md {
+  @media (min-width: $bp-md) {
+    @content;
+  }
+}
+
+@mixin from-lg {
+  @media (min-width: $bp-lg) {
+    @content;
+  }
+}
+
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+@mixin mono-label {
+  font-family: $font-mono;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: $gray;
+}
+
+@mixin focus-ring {
+  &:focus-visible {
+    outline: 2px solid $red;
+    outline-offset: 3px;
+  }
+}
+
+// Repeating diagonal hazard stripe, used sparingly as an accent.
+@mixin hazard-stripe($color-a, $color-b, $size: 10px) {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    $color-a 0,
+    $color-a $size,
+    $color-b $size,
+    $color-b $size * 2
+  );
+}

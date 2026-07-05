@@ -1,0 +1,115 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+
+  @include reduced-motion {
+    display: none;
+  }
+
+  &__panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: $bg;
+    transition: transform $leave-duration $ease-out;
+    transition-delay: 150ms;
+
+    &--top {
+      top: 0;
+      border-bottom: 1px solid $border;
+    }
+
+    &--bottom {
+      bottom: 0;
+      border-top: 1px solid $border;
+    }
+  }
+
+  &__content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: $space-4;
+    padding: $space-4;
+    transition: opacity 250ms ease;
+  }
+
+  &.is-leaving {
+    .boot__panel--top {
+      transform: translateY(-100%);
+    }
+    .boot__panel--bottom {
+      transform: translateY(100%);
+    }
+    .boot__content {
+      opacity: 0;
+    }
+  }
+
+  &__log {
+    display: flex;
+    flex-direction: column;
+    gap: $space-1;
+    width: min(90vw, 380px);
+  }
+
+  &__line {
+    @include mono-label;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    color: $gray;
+    font-size: 0.8rem;
+    display: flex;
+    gap: $space-2;
+
+    &--ok .boot__line-tag {
+      color: $red;
+    }
+
+    &--ready {
+      color: $white;
+      font-family: $font-display;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+
+      .boot__line-tag {
+        color: $red-bright;
+      }
+    }
+  }
+
+  &__line-tag {
+    color: $red;
+    flex-shrink: 0;
+  }
+
+  &__bar {
+    width: min(90vw, 380px);
+    height: 3px;
+    background: rgba($white, 0.08);
+
+    span {
+      display: block;
+      height: 100%;
+      background: $red;
+      transition: width 200ms linear;
+    }
+  }
+
+  &__skip {
+    @include mono-label;
+    font-size: 0.62rem;
+    color: $gray-dim;
+    margin-top: $space-2;
+  }
+}

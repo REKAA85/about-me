@@ -1,0 +1,106 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.social-links {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  width: 100%;
+  max-width: 420px;
+
+  &__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: $space-4;
+    padding: $space-4;
+    background: rgba($white, 0.02);
+    border: 1px solid $border;
+    border-radius: $card-radius;
+    overflow: hidden;
+    transition: border-color $duration-fast ease, transform $duration-fast ease,
+      background $duration-fast ease;
+    @include focus-ring;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      left: -100%;
+      background: linear-gradient(90deg, transparent, rgba($red, 0.12), transparent);
+      transition: left $duration-med $ease-out;
+    }
+
+    &:hover,
+    &:focus-visible {
+      border-color: rgba($red, 0.6);
+      background: rgba($red, 0.05);
+      transform: translateX(2px);
+
+      &::before {
+        left: 100%;
+      }
+    }
+
+    &[aria-disabled='true'] {
+      cursor: default;
+      opacity: 0.45;
+
+      &:hover {
+        border-color: $border;
+        background: rgba($white, 0.02);
+        transform: none;
+      }
+    }
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    color: $white;
+    background: rgba($white, 0.04);
+    border: 1px solid $border;
+    border-radius: $card-radius;
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__label {
+    @include mono-label;
+    color: $gray;
+  }
+
+  &__handle {
+    font-family: $font-display;
+    font-weight: 600;
+    font-size: 1rem;
+    color: $white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__arrow {
+    margin-left: auto;
+    color: $red;
+    font-size: 1.1rem;
+    transform: translateX(-4px);
+    opacity: 0;
+    transition: transform $duration-fast ease, opacity $duration-fast ease;
+  }
+
+  &__item:hover &__arrow,
+  &__item:focus-visible &__arrow {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

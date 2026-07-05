@@ -1,0 +1,235 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.id-card {
+  perspective: 1400px;
+  width: 100%;
+  max-width: 420px;
+
+  &__frame {
+    --tilt-x: 0deg;
+    --tilt-y: 0deg;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: $space-6;
+    padding: $space-6;
+    background: linear-gradient(165deg, $bg-panel-alt 0%, $bg-panel 70%);
+    border: 1px solid $border;
+    border-radius: $card-radius;
+    box-shadow:
+      0 30px 60px -20px rgba(0, 0, 0, 0.6),
+      0 0 0 1px rgba($white, 0.02) inset;
+    transform: rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+    transition: transform $duration-med $ease-out;
+    will-change: transform;
+
+    @include from-md {
+      padding: $space-8;
+    }
+
+    @include reduced-motion {
+      transition: none;
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba($red, 0.5), transparent 40%);
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+  }
+
+  &__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  &__signal {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+  }
+
+  &__crosshair {
+    color: $red;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  &__signal-label {
+    @include mono-label;
+  }
+
+  .status {
+    &--online {
+      color: $red-bright;
+    }
+    &--offline {
+      color: $gray;
+    }
+  }
+
+  &__wordmark {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+
+    &-brand {
+      font-family: $font-display;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: 0.06em;
+    }
+
+    &-mark {
+      @include mono-label;
+      font-size: 0.6rem;
+      letter-spacing: 0.05em;
+      color: $gray;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  &__chip {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 1.5px;
+    width: 32px;
+    aspect-ratio: 1;
+    flex-shrink: 0;
+  }
+
+  &__cell {
+    border-radius: 1px;
+    background: rgba($white, 0.06);
+
+    &.is-filled {
+      background: rgba($white, 0.7);
+    }
+
+    &.is-corner.is-filled {
+      background: $red;
+    }
+  }
+
+  &__frame:hover &__cell {
+    animation: flicker 1.6s ease-in-out infinite;
+    animation-delay: var(--delay);
+
+    @include reduced-motion {
+      animation: none;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+  }
+
+  &__name {
+    font-family: $font-display;
+    font-weight: 700;
+    font-size: clamp(1.6rem, 5vw, 2.1rem);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    padding-bottom: $space-3;
+    border-bottom: 1px solid $border-strong;
+  }
+
+  &__cursor {
+    color: $red;
+    animation: blink 1.1s steps(1) infinite;
+
+    @include reduced-motion {
+      animation: none;
+    }
+  }
+
+  &__fields {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+    margin: 0;
+  }
+
+  &__field {
+    display: flex;
+    align-items: baseline;
+    gap: $space-3;
+    font-size: 0.9rem;
+
+    dt {
+      @include mono-label;
+      width: 4.5rem;
+      flex-shrink: 0;
+    }
+
+    dd {
+      margin: 0;
+      color: $white;
+    }
+  }
+
+  &__bottom {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+    padding-top: $space-4;
+    border-top: 1px solid $border;
+  }
+
+  &__barcode {
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+    height: 28px;
+    flex: 1;
+    overflow: hidden;
+
+    span {
+      display: block;
+      width: var(--w);
+      background: rgba($white, 0.45);
+    }
+  }
+
+  &__tag {
+    @include mono-label;
+    color: $red-bright;
+    white-space: nowrap;
+  }
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}

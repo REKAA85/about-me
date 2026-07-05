@@ -1,0 +1,61 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+@use 'reset';
+@use 'background';
+@use 'boot';
+@use 'character-art';
+@use 'idcard';
+@use 'sociallinks';
+@use 'footer';
+
+.page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $space-8;
+  width: 100%;
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: $space-12 $space-4 $space-6;
+
+  @include from-md {
+    padding: $space-16 $space-8 $space-8;
+  }
+
+  &__layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-8;
+    width: 100%;
+
+    @include from-lg {
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      gap: $space-12;
+    }
+  }
+
+  &__side {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+    width: 100%;
+    max-width: 420px;
+
+    @include from-lg {
+      padding-top: $space-6;
+    }
+  }
+
+  &__side-heading {
+    @include mono-label;
+    color: $red-bright;
+    font-size: 0.75rem;
+  }
+}
