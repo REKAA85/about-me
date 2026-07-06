@@ -128,8 +128,8 @@
     border-radius: $card-radius;
   }
 
-  &__live.is-hidden {
-    display: none;
+  &__live {
+    width: 100%;
   }
 
   &__toggle {

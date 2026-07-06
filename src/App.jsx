@@ -5,7 +5,7 @@ import IdCard from './components/IdCard'
 import SocialLinks from './components/SocialLinks'
 import Footer from './components/Footer'
 import ArtGallery from './components/ArtGallery'
-import TwitchEmbed from './components/TwitchEmbed'
+// import TwitchEmbed from './components/TwitchEmbed'
 
 const BOOT_KEY = 'rekaa-booted'
 
@@ -64,10 +64,10 @@ export default function App() {
           </div>
         ) : (
           <>
+            {/* <TwitchEmbed channel="rekaa_85" onStatusChange={handleTwitchStatus} /> */}
             <div className="page__layout">
               <IdCard {...PROFILE} status={liveStatus} />
               <div className="page__side">
-                <TwitchEmbed channel="rekaa_85" onStatusChange={handleTwitchStatus} />
                 <section className="page__about" aria-label="About Me">
                   <h2 className="page__side-heading">// About Me</h2>
                   <p className="page__about-text">{PROFILE.about}</p>

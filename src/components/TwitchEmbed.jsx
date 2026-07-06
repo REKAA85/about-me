@@ -23,8 +23,6 @@ function loadEmbedScript() {
   })
 }
 
-// Twitch's Embed SDK reports real ONLINE/OFFLINE state via the player itself,
-// so live status here reflects the actual stream — no API key required.
 export default function TwitchEmbed({ channel, onStatusChange }) {
   const containerRef = useRef(null)
   const embedRef = useRef(null)
@@ -51,11 +49,10 @@ export default function TwitchEmbed({ channel, onStatusChange }) {
       })
       embedRef.current = embed
 
-      embed.addEventListener(window.Twitch.Embed.VIDEO_READY, () => {
-        if (cancelled) return
-        const player = embed.getPlayer()
-        player.addEventListener(window.Twitch.Player.ONLINE, () => setStatus('online'))
-        player.addEventListener(window.Twitch.Player.OFFLINE, () => setStatus('offline'))
+      // Twitch's Player.ONLINE/OFFLINE events aren't reliably available, so
+      // VIDEO_PLAY (fires once video actually starts) is the live signal used.
+      embed.addEventListener(window.Twitch.Embed.VIDEO_PLAY, () => {
+        if (!cancelled) setStatus('online')
       })
     })
 
@@ -65,11 +62,7 @@ export default function TwitchEmbed({ channel, onStatusChange }) {
   }, [channel])
 
   return (
-    <section
-      className={`page__live ${status === 'online' ? 'is-live' : 'is-hidden'}`}
-      aria-label="Live Stream"
-      aria-hidden={status !== 'online'}
-    >
+    <section className="page__live" aria-label="Live Stream">
       <h2 className="page__side-heading">// Live</h2>
       <div className="twitch-embed" ref={containerRef} />
     </section>
