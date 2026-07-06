@@ -8,6 +8,7 @@
 @use 'sociallinks';
 @use 'footer';
 @use 'artgallery';
+@use 'twitchembed';
 
 .page {
   position: relative;
@@ -115,6 +116,7 @@
   }
 
   &__about,
+  &__live,
   &__channels,
   &__toggle-section {
     display: flex;
@@ -124,6 +126,10 @@
     background: rgba($white, 0.025);
     border: 1px solid $border;
     border-radius: $card-radius;
+  }
+
+  &__live.is-hidden {
+    display: none;
   }
 
   &__toggle {

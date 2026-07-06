@@ -5,6 +5,7 @@ import IdCard from './components/IdCard'
 import SocialLinks from './components/SocialLinks'
 import Footer from './components/Footer'
 import ArtGallery from './components/ArtGallery'
+import TwitchEmbed from './components/TwitchEmbed'
 
 const BOOT_KEY = 'rekaa-booted'
 
@@ -12,7 +13,6 @@ const BOOT_KEY = 'rekaa-booted'
 const PROFILE = {
   handle: 'ROGUE TEST SUBJECT',
   role: 'Variety / FPS Streamer',
-  status: 'Offline', // 'Online' | 'Offline t' 
   tag: 'VTUBER / STREAMER',
   about:
     'The name is Rekaa (reh-kah). I am a variety streamer and VTuber. I play a lot of FPS games, but I also enjoy other genres. I stream on Twitch constantly and love interacting with my friends and chatters!',
@@ -27,6 +27,11 @@ const LINKS = [
 export default function App() {
   const [booting, setBooting] = useState(() => sessionStorage.getItem(BOOT_KEY) !== 'true')
   const [scene, setScene] = useState('profile')
+  const [liveStatus, setLiveStatus] = useState('Offline')
+
+  function handleTwitchStatus(status) {
+    setLiveStatus(status === 'online' ? 'Online' : 'Offline')
+  }
 
   function handleBootDone() {
     sessionStorage.setItem(BOOT_KEY, 'true')
@@ -60,8 +65,9 @@ export default function App() {
         ) : (
           <>
             <div className="page__layout">
-              <IdCard {...PROFILE} />
+              <IdCard {...PROFILE} status={liveStatus} />
               <div className="page__side">
+                <TwitchEmbed channel="rekaa_85" onStatusChange={handleTwitchStatus} />
                 <section className="page__about" aria-label="About Me">
                   <h2 className="page__side-heading">// About Me</h2>
                   <p className="page__about-text">{PROFILE.about}</p>
