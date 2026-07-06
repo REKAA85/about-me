@@ -4,6 +4,7 @@ import BootIntro from './components/BootIntro'
 import IdCard from './components/IdCard'
 import SocialLinks from './components/SocialLinks'
 import Footer from './components/Footer'
+import ArtGallery from './components/ArtGallery'
 
 const BOOT_KEY = 'rekaa-booted'
 
@@ -13,6 +14,8 @@ const PROFILE = {
   role: 'Variety / FPS Streamer',
   status: 'Offline', // 'Online' | 'Offline t' 
   tag: 'VTUBER / STREAMER',
+  about:
+    'The name is Rekaa (reh-kah). I am a variety streamer and VTuber. I play a lot of FPS games, but I also enjoy other genres. I stream on Twitch constantly and love interacting with my friends and chatters!',
 }
 
 const LINKS = [
@@ -23,6 +26,7 @@ const LINKS = [
 
 export default function App() {
   const [booting, setBooting] = useState(() => sessionStorage.getItem(BOOT_KEY) !== 'true')
+  const [scene, setScene] = useState('profile')
 
   function handleBootDone() {
     sessionStorage.setItem(BOOT_KEY, 'true')
@@ -33,14 +37,49 @@ export default function App() {
     <>
       <Background />
       {booting && <BootIntro onDone={handleBootDone} />}
-      <main className="page" inert={booting ? '' : undefined}>
-        <div className="page__layout">
-          <IdCard {...PROFILE} />
-          <div className="page__side">
-            <h2 className="page__side-heading">// Channels</h2>
-            <SocialLinks links={LINKS} />
+      <main
+        className={`page ${scene === 'gallery' ? 'page--gallery' : ''} ${scene === 'profile' ? 'page--returning' : ''}`}
+        inert={booting ? '' : undefined}
+      >
+        {scene === 'gallery' ? (
+          <div className="page__gallery-shell">
+            <div className="page__gallery-top">
+              <div className="page__gallery-intro">
+                <p className="page__gallery-eyebrow">// archive</p>
+                <h1 className="page__gallery-title">Art Gallery</h1>
+                <p className="page__gallery-copy">
+                  Collection of art of me and many more!
+                </p>
+              </div>
+              <button type="button" className="page__toggle" onClick={() => setScene('profile')}>
+                Return to profile
+              </button>
+            </div>
+            <ArtGallery />
           </div>
-        </div>
+        ) : (
+          <>
+            <div className="page__layout">
+              <IdCard {...PROFILE} />
+              <div className="page__side">
+                <section className="page__about" aria-label="About Me">
+                  <h2 className="page__side-heading">// About Me</h2>
+                  <p className="page__about-text">{PROFILE.about}</p>
+                </section>
+                <div className="page__channels">
+                  <h2 className="page__side-heading">// Channels</h2>
+                  <SocialLinks links={LINKS} />
+                </div>
+                <section className="page__toggle-section" aria-label="Scene toggle">
+                  <h2 className="page__side-heading">// Scene</h2>
+                  <button type="button" className="page__toggle" onClick={() => setScene('gallery')}>
+                    Enter art grid
+                  </button>
+                </section>
+              </div>
+            </div>
+          </>
+        )}
         <Footer />
       </main>
     </>

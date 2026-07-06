@@ -1,0 +1,153 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.art-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: $space-6;
+  width: 100%;
+  padding: $space-6;
+  background: rgba($white, 0.03);
+  border: 1px solid $border;
+  border-radius: $card-radius;
+  box-shadow: inset 0 0 0 1px rgba($red, 0.08);
+
+  @include from-md {
+    padding: $space-8;
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+
+    @include from-md {
+      flex-direction: row;
+      align-items: end;
+      justify-content: space-between;
+    }
+  }
+
+  &__eyebrow {
+    @include mono-label;
+    margin: 0 0 $space-2;
+    color: $red-bright;
+  }
+
+  &__title {
+    margin: 0;
+    font-family: $font-display;
+    font-size: 1.35rem;
+    letter-spacing: 0.04em;
+    color: $white;
+  }
+
+  &__search {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  &__search-label {
+    @include mono-label;
+    color: $gray;
+  }
+
+  &__search input {
+    width: 100%;
+    padding: $space-3 $space-4;
+    border: 1px solid $border;
+    border-radius: $card-radius;
+    background: rgba($bg-panel, 0.95);
+    color: $white;
+    font-family: $font-mono;
+    font-size: 0.85rem;
+
+    &::placeholder {
+      color: rgba($gray, 0.8);
+    }
+
+    &:focus {
+      outline: 2px solid rgba($red, 0.6);
+      outline-offset: 2px;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    gap: $space-4;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+
+    @include from-md {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+    padding: $space-3;
+    border: 1px solid $border;
+    border-radius: $card-radius;
+    background: rgba($white, 0.025);
+    transition: transform $duration-fast ease, border-color $duration-fast ease,
+      background $duration-fast ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      border-color: rgba($red, 0.5);
+      background: rgba($red, 0.04);
+    }
+  }
+
+  &__image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: $card-radius;
+    border: 1px solid rgba($white, 0.08);
+    background: rgba($bg-panel-alt, 0.9);
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: $space-1;
+  }
+
+  &__name {
+    margin: 0;
+    font-family: $font-display;
+    font-size: 1rem;
+    color: $white;
+  }
+
+  &__artist {
+    margin: 0;
+    font-family: $font-mono;
+    font-size: 0.76rem;
+    color: $gray;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  &__hint {
+    margin: 0;
+    font-family: $font-mono;
+    font-size: 0.72rem;
+    color: $gray;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  &__empty {
+    margin: 0;
+    font-family: $font-mono;
+    font-size: 0.8rem;
+    color: $gray;
+  }
+}
