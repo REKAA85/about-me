@@ -83,18 +83,18 @@ export default function App() {
                 </section>
               </div>
               <div className="page__side">
-                <section className="page__about" aria-label="About Me">
+                <section className="page__block" aria-label="About Me">
                   <h2 className="page__side-heading">// About Me</h2>
                   <p className="page__about-text">{PROFILE.about}</p>
                 </section>
-                <div className="page__channels">
+                <section className="page__block" aria-label="Channels">
                   <h2 className="page__side-heading">// Channels</h2>
                   <SocialLinks links={LINKS} />
-                </div>
-                <div className="page__support">
+                </section>
+                <section className="page__block" aria-label="Support Me">
                   <h2 className="page__side-heading">// Support Me</h2>
                   <SocialLinks links={SUPPORT_LINKS} />
-                </div>
+                </section>
               </div>
             </div>
           </>
