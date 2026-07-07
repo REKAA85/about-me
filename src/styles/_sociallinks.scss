@@ -26,9 +26,10 @@
       content: '';
       position: absolute;
       inset: 0;
-      left: -100%;
       background: linear-gradient(90deg, transparent, rgba($red, 0.12), transparent);
-      transition: left $duration-med $ease-out;
+      transform: translateX(-100%);
+      transition: transform $duration-med $ease-out;
+      pointer-events: none;
     }
 
     &:hover,
@@ -38,9 +39,15 @@
       transform: translateX(2px);
 
       &::before {
-        left: 100%;
+        transform: translateX(100%);
       }
     }
+
+    // Each platform's own brand color, shown at rest.
+    &--twitch { border-color: rgba($brand-twitch, 0.35); background: rgba($brand-twitch, 0.05); }
+    &--youtube { border-color: rgba($brand-youtube, 0.35); background: rgba($brand-youtube, 0.05); }
+    &--twitter { border-color: rgba($brand-twitter, 0.35); background: rgba($brand-twitter, 0.05); }
+    &--discord { border-color: rgba($brand-discord, 0.35); background: rgba($brand-discord, 0.05); }
 
     &[aria-disabled='true'] {
       cursor: default;
@@ -65,6 +72,39 @@
     background: rgba($white, 0.04);
     border: 1px solid $border;
     border-radius: $card-radius;
+    transition: color $duration-fast ease, background $duration-fast ease,
+      border-color $duration-fast ease;
+
+    // Each platform's own brand color, shown at rest.
+    &--twitch {
+      color: $brand-twitch;
+      background: rgba($brand-twitch, 0.1);
+      border-color: rgba($brand-twitch, 0.35);
+    }
+    &--youtube {
+      color: $brand-youtube;
+      background: rgba($brand-youtube, 0.1);
+      border-color: rgba($brand-youtube, 0.35);
+    }
+    &--twitter {
+      color: $brand-twitter;
+      background: rgba($brand-twitter, 0.1);
+      border-color: rgba($brand-twitter, 0.35);
+    }
+    &--discord {
+      color: $brand-discord;
+      background: rgba($brand-discord, 0.1);
+      border-color: rgba($brand-discord, 0.35);
+    }
+  }
+
+  // On hover, fall back to the site's own accent so the interaction
+  // language matches the rest of the page.
+  &__item:hover &__icon,
+  &__item:focus-visible &__icon {
+    color: $white;
+    background: rgba($red, 0.16);
+    border-color: rgba($red, 0.6);
   }
 
   &__text {

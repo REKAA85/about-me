@@ -69,28 +69,85 @@
     font-size: 0.8rem;
     display: flex;
     gap: $space-2;
+    position: relative;
+
+    // Every line slams in — the impact gets sharper as things get worse.
+    animation: boot-line-impact 220ms ease-out;
 
     &--ok .boot__line-tag {
       color: $red;
     }
 
-    &--ready {
-      color: $white;
-      font-family: $font-display;
-      font-weight: 700;
-      font-size: 1rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+    &--warn {
+      color: $red-bright;
+      animation: boot-line-impact 220ms ease-out, boot-line-flicker 640ms steps(5) 1;
 
       .boot__line-tag {
         color: $red-bright;
       }
+    }
+
+    &--error {
+      color: $red-bright;
+      font-family: $font-display;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      animation: boot-line-impact 260ms ease-out, boot-line-flicker 520ms steps(4) 1;
+
+      .boot__line-tag {
+        color: $red-bright;
+      }
+
+      // Faint always-on glitch echo, foreshadowing the full glitch burst.
+      &[data-text]::before,
+      &[data-text]::after {
+        opacity: 0.45;
+        animation-duration: 700ms;
+      }
+      &[data-text]::before {
+        color: #33fff0;
+      }
+      &[data-text]::after {
+        color: #ff2b6d;
+        animation-name: boot-glitch-clip-2;
+      }
+    }
+
+    // RGB-split duplicate of the line text, used to fake a corrupted echo.
+    &[data-text]::before,
+    &[data-text]::after {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+      mix-blend-mode: screen;
+      animation: boot-glitch-clip-1 380ms infinite steps(2, end);
+
+      @include reduced-motion {
+        content: none;
+      }
+    }
+
+    @include reduced-motion {
+      animation: none;
     }
   }
 
   &__line-tag {
     color: $red;
     flex-shrink: 0;
+  }
+
+  &__line-text {
+    display: inline;
+  }
+
+  &__char {
+    display: inline-block;
   }
 
   &__bar {
@@ -112,4 +169,209 @@
     color: $gray-dim;
     margin-top: $space-2;
   }
+
+  // Full-bleed static/scanline overlays, only active during the glitch burst.
+  &__noise,
+  &__scan {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &__noise {
+    mix-blend-mode: overlay;
+    background:
+      repeating-linear-gradient(0deg, rgba($white, 0.08) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, rgba($red-bright, 0.05) 0 2px, transparent 2px 6px);
+    background-size: 100% 3px, 6px 100%;
+  }
+
+  &__scan {
+    mix-blend-mode: screen;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba($red-bright, 0.1) 0,
+      rgba($red-bright, 0.1) 2px,
+      transparent 2px 5px
+    );
+  }
+
+  // Binary/hex debris that pops up at random spots during the glitch burst.
+  &__pops {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  &__pop {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    @include mono-label;
+    font-size: 0.6rem;
+    color: $red-bright;
+    opacity: 0;
+    white-space: nowrap;
+    animation: boot-pop-flash var(--pdur, 300ms) ease-out var(--pdelay, 0ms) 1 both;
+
+    @include reduced-motion {
+      display: none;
+    }
+  }
+
+  // Signal starts to fail before the full crash — short, spaced-out hiccups.
+  &.is-erroring {
+    .boot__content {
+      animation: boot-hiccup 2400ms steps(1) infinite;
+    }
+
+    .boot__noise {
+      opacity: 0.15;
+      animation: boot-noise-shift 400ms steps(3) infinite;
+    }
+
+    @include reduced-motion {
+      .boot__content,
+      .boot__noise {
+        animation: none;
+        opacity: 0;
+      }
+    }
+  }
+
+  // Full crash — letters scatter and screen tears, but everything below is
+  // capped under ~3 transitions/sec and away from high-contrast full-field
+  // flashes, so this stays safe for photosensitive viewers (no strobe here).
+  &.is-glitching {
+    animation: boot-hue-shift 900ms linear infinite;
+
+    .boot__char {
+      animation: boot-char-scatter 480ms steps(2, jump-none) infinite;
+      animation-delay: var(--cdelay, 0ms);
+    }
+
+    .boot__line[data-text]::before,
+    .boot__line[data-text]::after {
+      opacity: 0.7;
+    }
+
+    .boot__line[data-text]::after {
+      animation-name: boot-glitch-clip-2;
+      animation-duration: 360ms;
+    }
+
+    .boot__noise {
+      opacity: 0.35;
+      animation: boot-noise-shift 360ms steps(4) infinite;
+    }
+
+    .boot__scan {
+      opacity: 0.6;
+      animation: boot-scan-tear 380ms steps(3) infinite;
+    }
+
+    @include reduced-motion {
+      animation: none;
+
+      .boot__char {
+        animation: none;
+      }
+
+      .boot__noise,
+      .boot__scan {
+        animation: none;
+        opacity: 0;
+      }
+    }
+  }
+}
+
+@keyframes boot-glitch-clip-1 {
+  0% { clip-path: inset(10% 0 68% 0); transform: translate(-2px, 1px); }
+  20% { clip-path: inset(52% 0 15% 0); transform: translate(2px, -1px); }
+  40% { clip-path: inset(80% 0 2% 0); transform: translate(-1px, 2px); }
+  60% { clip-path: inset(20% 0 60% 0); transform: translate(2px, 1px); }
+  80% { clip-path: inset(65% 0 10% 0); transform: translate(-2px, -1px); }
+  100% { clip-path: inset(5% 0 85% 0); transform: translate(1px, -2px); }
+}
+
+@keyframes boot-glitch-clip-2 {
+  0% { clip-path: inset(70% 0 5% 0); transform: translate(2px, -1px); }
+  25% { clip-path: inset(10% 0 75% 0); transform: translate(-2px, 1px); }
+  50% { clip-path: inset(45% 0 40% 0); transform: translate(1px, 2px); }
+  75% { clip-path: inset(85% 0 3% 0); transform: translate(-1px, -2px); }
+  100% { clip-path: inset(30% 0 55% 0); transform: translate(2px, 1px); }
+}
+
+@keyframes boot-noise-shift {
+  0% { background-position: 0 0, 0 0; }
+  25% { background-position: 0 -37px, 13px 0; }
+  50% { background-position: 0 19px, -9px 0; }
+  75% { background-position: 0 -12px, 21px 0; }
+  100% { background-position: 0 5px, -17px 0; }
+}
+
+@keyframes boot-scan-tear {
+  0% { transform: translateY(0); }
+  33% { transform: translateY(-6px); }
+  66% { transform: translateY(4px); }
+  100% { transform: translateY(-2px); }
+}
+
+// Scatters a character out to its randomized offset and partway back,
+// staggered per-letter via --cdelay so the whole word doesn't move as one
+// synchronized block (also what keeps this safe for photosensitive viewers).
+@keyframes boot-char-scatter {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  45% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0.55; }
+  75% {
+    transform: translate(calc(var(--dx) * -0.55), calc(var(--dy) * 0.6))
+      rotate(calc(var(--rot) * -0.5));
+    opacity: 0.85;
+  }
+}
+
+// One-shot fade for a stray bit of binary/hex debris.
+@keyframes boot-pop-flash {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.85); }
+  25% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.05); }
+  60% { opacity: 0.85; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+}
+
+// Slow, continuous color drift — no brightness/invert spikes, so it never
+// reads as a flash. Photosensitive-safe by design (see is-glitching notes).
+@keyframes boot-hue-shift {
+  0% { filter: hue-rotate(0deg) saturate(1) contrast(1); }
+  50% { filter: hue-rotate(18deg) saturate(1.35) contrast(1.08); }
+  100% { filter: hue-rotate(-14deg) saturate(1.2) contrast(1.04); }
+}
+
+// One-shot "slam in" for each new log line.
+@keyframes boot-line-impact {
+  0% { opacity: 0; transform: translateX(-8px) scale(0.96); }
+  45% { opacity: 1; transform: translateX(2px) scale(1.02); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+// One-shot stutter right as a warn/error line lands. Kept to a shallow
+// opacity dip (never fully off) so it reads as a stutter, not a flash.
+@keyframes boot-line-flicker {
+  0%, 100% { opacity: 1; }
+  20% { opacity: 0.55; }
+  40% { opacity: 1; }
+  60% { opacity: 0.65; }
+  80% { opacity: 1; }
+}
+
+// Intermittent signal drop-outs while the log is still readable —
+// mostly still, with a quick jolt a few times per cycle.
+@keyframes boot-hiccup {
+  0%, 3%, 46%, 50%, 90%, 94%, 100% { transform: translate(0, 0); filter: none; }
+  1% { transform: translate(-4px, 2px); filter: hue-rotate(40deg); }
+  2% { transform: translate(3px, -2px); filter: none; }
+  47% { transform: translate(4px, -3px); filter: hue-rotate(-30deg); }
+  48% { transform: translate(-3px, 2px); filter: none; }
+  91% { transform: translate(-5px, 3px); filter: hue-rotate(50deg); }
+  92% { transform: translate(4px, -2px); filter: none; }
 }

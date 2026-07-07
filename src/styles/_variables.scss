@@ -18,6 +18,12 @@ $gray-dim: #4a4a52;
 $border: rgba($white, 0.12);
 $border-strong: rgba($white, 0.22);
 
+// Brand colors — used only for the social-link icons at rest.
+$brand-twitch: #9146ff;
+$brand-youtube: #ff0000;
+$brand-twitter: #1d9bf0;
+$brand-discord: #5865f2;
+
 // Typography
 $font-mono: 'Space Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 $font-display: 'Rajdhani', 'Arial Narrow', sans-serif;
