@@ -6,6 +6,14 @@ const artModules = import.meta.glob('../assets/art/*.{svg,png,jpg,jpeg,webp,gif}
   import: 'default',
 })
 
+// Resized/re-encoded grid thumbnails — gif and svg are excluded so animation
+// and vector fidelity aren't touched; the lightbox always uses the original.
+const thumbnailModules = import.meta.glob('../assets/art/*.{png,jpg,jpeg,webp}', {
+  eager: true,
+  import: 'default',
+  query: '?w=480&format=webp&quality=75',
+})
+
 function formatDisplayName(value) {
   return value
     .replace(/[-_]+/g, ' ')
@@ -46,8 +54,8 @@ function parseArtworkTitle(title) {
   }
 }
 
-function ArtworkCard({ artwork, isRevealed, onReveal, onSelect }) {
-  const { id, title, name, artistName, image, isNsfw } = artwork
+function ArtworkCard({ artwork, isRevealed, isFlashing, onReveal, onSelect, onFlashEnd }) {
+  const { id, title, name, artistName, thumbnail, isNsfw } = artwork
   const isBlurred = isNsfw && !isRevealed
 
   return (
@@ -59,15 +67,24 @@ function ArtworkCard({ artwork, isRevealed, onReveal, onSelect }) {
       <div className="art-gallery__image-wrap">
         <img
           className={`art-gallery__image${isBlurred ? ' art-gallery__image--blurred' : ''}`}
-          src={image}
+          src={thumbnail}
           alt={isBlurred ? 'Hidden NSFW artwork' : title}
           loading="lazy"
+          decoding="async"
         />
-        {isBlurred && (
-          <div className="art-gallery__nsfw-overlay">
+        {isNsfw && (
+          <div
+            className={`art-gallery__nsfw-overlay${isRevealed ? ' art-gallery__nsfw-overlay--revealed' : ''}`}
+          >
             <span className="art-gallery__nsfw-label">NSFW</span>
             <span className="art-gallery__nsfw-hint">Click to reveal</span>
           </div>
+        )}
+        {isNsfw && (
+          <span
+            className={`art-gallery__reveal-flash${isFlashing ? ' art-gallery__reveal-flash--active' : ''}`}
+            onAnimationEnd={onFlashEnd}
+          />
         )}
       </div>
       <div className="art-gallery__meta">
@@ -87,6 +104,7 @@ const ARTWORKS = Object.entries(artModules)
       id: fileName,
       title,
       image,
+      thumbnail: thumbnailModules[path] ?? image,
       ...parseArtworkTitle(title),
     }
   })
@@ -101,6 +119,8 @@ export default function ArtGallery() {
   const [query, setQuery] = useState('')
   const [activeId, setActiveId] = useState(null)
   const [revealedIds, setRevealedIds] = useState(() => new Set())
+  const [flashId, setFlashId] = useState(null)
+  const [isLightboxClosing, setIsLightboxClosing] = useState(false)
 
   const revealArtwork = useCallback((id) => {
     setRevealedIds((prev) => {
@@ -109,7 +129,10 @@ export default function ArtGallery() {
       next.add(id)
       return next
     })
+    setFlashId(id)
   }, [])
+
+  const clearFlash = useCallback(() => setFlashId(null), [])
 
   const filteredArtworks = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
@@ -147,7 +170,21 @@ export default function ArtGallery() {
     [activeId],
   )
 
-  const closeLightbox = useCallback(() => setActiveId(null), [])
+  const openLightbox = useCallback((id) => {
+    setIsLightboxClosing(false)
+    setActiveId(id)
+  }, [])
+
+  const closeLightbox = useCallback(() => setIsLightboxClosing(true), [])
+
+  const handleLightboxAnimationEnd = useCallback(
+    (event) => {
+      if (!isLightboxClosing || event.target !== event.currentTarget) return
+      setActiveId(null)
+      setIsLightboxClosing(false)
+    },
+    [isLightboxClosing],
+  )
 
   useEffect(() => {
     if (!activeArtwork) return undefined
@@ -189,8 +226,10 @@ export default function ArtGallery() {
               <ArtworkCard
                 artwork={artwork}
                 isRevealed={revealedIds.has(artwork.id)}
+                isFlashing={flashId === artwork.id}
                 onReveal={revealArtwork}
-                onSelect={setActiveId}
+                onSelect={openLightbox}
+                onFlashEnd={clearFlash}
                 key={artwork.id}
               />
             ))}
@@ -206,8 +245,10 @@ export default function ArtGallery() {
               <ArtworkCard
                 artwork={artwork}
                 isRevealed={revealedIds.has(artwork.id)}
+                isFlashing={flashId === artwork.id}
                 onReveal={revealArtwork}
-                onSelect={setActiveId}
+                onSelect={openLightbox}
+                onFlashEnd={clearFlash}
                 key={artwork.id}
               />
             ))}
@@ -220,11 +261,12 @@ export default function ArtGallery() {
       {activeArtwork &&
         createPortal(
           <div
-            className="art-gallery__lightbox"
+            className={`art-gallery__lightbox${isLightboxClosing ? ' art-gallery__lightbox--closing' : ''}`}
             role="dialog"
             aria-modal="true"
             aria-label={activeArtwork.name}
             onClick={closeLightbox}
+            onAnimationEnd={handleLightboxAnimationEnd}
           >
             <button
               type="button"
@@ -235,13 +277,14 @@ export default function ArtGallery() {
               ✕
             </button>
             <figure
-              className="art-gallery__lightbox-frame"
+              className={`art-gallery__lightbox-frame${isLightboxClosing ? ' art-gallery__lightbox-frame--closing' : ''}`}
               onClick={(event) => event.stopPropagation()}
             >
               <img
                 className="art-gallery__lightbox-image"
                 src={activeArtwork.image}
                 alt={activeArtwork.title}
+                decoding="async"
               />
               <figcaption className="art-gallery__lightbox-caption">
                 <h3 className="art-gallery__name">{activeArtwork.name}</h3>

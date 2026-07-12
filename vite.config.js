@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { imagetools } from 'vite-imagetools'
 
 // ---------------------------------------------------------------------------
 // GitHub Pages base path:
@@ -9,5 +10,5 @@ import react from '@vitejs/plugin-react'
 // ---------------------------------------------------------------------------
 export default defineConfig({
   base: '/about-me',
-  plugins: [react()],
+  plugins: [react(), imagetools()],
 })

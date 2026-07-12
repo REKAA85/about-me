@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import Background from './components/Background'
 import BootIntro from './components/BootIntro'
 import IdCard from './components/IdCard'
 import SocialLinks from './components/SocialLinks'
 import Footer from './components/Footer'
-import ArtGallery from './components/ArtGallery'
 // import TwitchEmbed from './components/TwitchEmbed'
+
+const ArtGallery = lazy(() => import('./components/ArtGallery'))
 
 const BOOT_KEY = 'rekaa-booted'
 
@@ -67,7 +68,9 @@ export default function App() {
                 Return to profile
               </button>
             </div>
-            <ArtGallery />
+            <Suspense fallback={<p className="page__gallery-loading">Loading gallery...</p>}>
+              <ArtGallery />
+            </Suspense>
           </div>
         ) : (
           <>

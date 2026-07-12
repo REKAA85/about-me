@@ -131,6 +131,15 @@
     color: $white;
   }
 
+  &__gallery-loading {
+    margin: 0;
+    font-family: $font-mono;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $gray;
+  }
+
   &__live {
     display: flex;
     flex-direction: column;
