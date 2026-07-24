@@ -7,3 +7,4 @@ src/public/
 .vscode/*
 !.vscode/extensions.json
 npm-debug.log*
+.claude
