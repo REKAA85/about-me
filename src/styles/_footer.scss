@@ -17,7 +17,7 @@
   &__track {
     display: flex;
     width: max-content;
-    animation: ticker 22s linear infinite;
+    animation: ticker 30s linear infinite;
 
     @include reduced-motion {
       animation-duration: 60s;

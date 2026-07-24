@@ -1,7 +1,7 @@
-const TICKER_ITEMS = ['VARIETY', 'FPS', 'VTUBER', 'LIVE ON TWITCH']
+const TICKER_ITEMS = ['ROUGE', 'TEST SUBJECT', 'DANGER', 'WARNING']
 
 export default function Footer() {
-  const track = [...TICKER_ITEMS, ...TICKER_ITEMS]
+  const track = [...TICKER_ITEMS, ...TICKER_ITEMS, ...TICKER_ITEMS, ...TICKER_ITEMS]
 
   return (
     <footer className="site-footer">
