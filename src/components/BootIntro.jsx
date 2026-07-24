@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 // `hold` is how long this line waits after the previous one — pacing slows
 // down as things start to go wrong, for tension before the crash.
 const LINES = [
-  { tag: 'INIT', text: 'starting reality sync', hold: 220 },
-  { tag: 'INIT', text: 'establishing signal uplink', hold: 240 },
+  { tag: 'INIT', text: 'checking version...', hold: 220 },
+  { tag: 'INIT', text: 'version checked: v7.23.26', hold: 240 },
   { tag: 'OK', text: 'profile loaded', hold: 220 },
   { tag: 'OK', text: 'channels synced', hold: 200 },
   { tag: 'WARN', text: 'anomaly detected', hold: 320 },

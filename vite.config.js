@@ -9,6 +9,6 @@ import { imagetools } from 'vite-imagetools'
 // Update the value below once the repo is created, then redeploy.
 // ---------------------------------------------------------------------------
 export default defineConfig({
-  base: '/about-me',
+  base: '/about-me/',
   plugins: [react(), imagetools()],
 })

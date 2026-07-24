@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Skill(run)",
-      "Skill(run:*)"
+      "Skill(run:*)",
+      "Bash(mkdir -p /workspaces/about-me/public)",
+      "Bash(cp \"/workspaces/about-me/src/assets/icon/Rectangle 96.png\" /workspaces/about-me/public/favicon.png)"
     ]
   }
 }
