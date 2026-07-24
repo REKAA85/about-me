@@ -14,9 +14,9 @@ const BOOT_KEY = 'rekaa-booted'
 const PROFILE = {
   handle: 'ROGUE TEST SUBJECT',
   role: 'Variety / FPS Streamer',
-  tag: 'VTUBER / STREAMER',
+  tag: 'VTUBER & FULL-STACK',
   about:
-    'The name is Rekaa (reh-kah). I am a variety streamer and VTuber. I play a lot of FPS games, but I also enjoy other genres. I stream on Twitch constantly and love interacting with my friends and chatters!',
+    'The name is Rekaa (reh-kah). I am a variety streamer and VTuber. I play a lot of FPS games, hang with friends, and dive into other genres. I stream on Twitch constantly and love interacting with my friends and viewers! Hope to see you soon!',
 }
 
 const LINKS = [
@@ -81,7 +81,7 @@ export default function App() {
                 <section className="page__toggle-section" aria-label="Art archives toggle">
                   <h2 className="page__side-heading">// Art Archives</h2>
                   <button type="button" className="page__toggle" onClick={() => setScene('gallery')}>
-                    Enter art grid
+                    Art Gallery
                   </button>
                 </section>
               </div>

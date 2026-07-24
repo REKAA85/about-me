@@ -15,7 +15,7 @@ export default function Footer() {
           ))}
         </div>
       </div>
-      <p className="site-footer__copy">&copy; 2026 REKAA_85 — ALL SIGNALS RESERVED</p>
+      <p className="site-footer__copy">&copy; 2026 REKAA_85 — AI TRAINING IS PROHIBITED</p>
     </footer>
   )
 }
