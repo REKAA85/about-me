@@ -821,6 +821,8 @@ button.home__corner {
 // ---------------------------------------------------------------------------
 @media (max-width: $bp-md), (max-aspect-ratio: 1 / 1) {
   .home {
+    // The grain is drawn by .home__art here — see HomeArtStyle.scss.
+    background-image: none;
     --corner: clamp(2.1rem, 5.6vw, 3.15rem);
 
     // Row metrics re-pointed for portrait. --nav-w must stay a concrete

@@ -226,12 +226,23 @@
 
   // Cover-scaling puts the artboard origin several hundred px off-screen, so
   // the stage is collapsed onto the viewport and its children re-pointed.
+  //
+  // Fixed and 100lvh, not absolute and 100%: .home stops at 100svh, the
+  // viewport with the browser toolbars showing, but iOS Safari's bottom bar is
+  // translucent, so the strip beneath it showed bare ground and a hard edge
+  // where the art was clipped. Fixed escapes .home's overflow without adding
+  // scroll height. Everything inside is still positioned in svh, so the
+  // composition is unchanged — the art simply carries on under the bar.
   .home__art {
+    position: fixed;
     left: 0;
     top: 0;
     width: 100%;
-    height: 100%;
+    height: 100vh;
+    height: 100lvh;
     transform: none;
+    // The grain moves here from .home so it also runs under the toolbar.
+    background-image: var(--grain);
   }
 
   .home__band {
@@ -254,7 +265,10 @@
   .home__art::after {
     content: '';
     position: absolute;
-    inset: 0;
+    // Pinned to the visible viewport so the gradient stops land where they
+    // did before the stage grew to 100lvh.
+    inset: 0 0 auto;
+    height: 100svh;
     background: linear-gradient(
       to bottom,
       color-mix(in srgb, var(--c-surface) 95%, transparent) 0%,
