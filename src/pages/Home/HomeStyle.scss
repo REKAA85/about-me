@@ -820,6 +820,15 @@ button.home__corner {
 // the copy is sized against height as well as width.
 // ---------------------------------------------------------------------------
 @media (max-width: $bp-md), (max-aspect-ratio: 1 / 1) {
+  // The home screen is exactly one viewport, so nothing should move under a
+  // drag. Mobile Safari still rubber-bands a page that fits, and would scroll
+  // any sliver of overflow, so both are switched off while .home is mounted.
+  html:has(.home),
+  html:has(.home) body {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
   .home {
     --corner: clamp(2.1rem, 5.6vw, 3.15rem);
 
