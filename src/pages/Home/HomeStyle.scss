@@ -1,0 +1,914 @@
+@use 'sass:math';
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+@use '../../styles/frame' as *;
+
+// ---------------------------------------------------------------------------
+// Home — Figma "Home Page", node 1096:1019.
+//
+// The page's own furniture: the corner marks and boot chip, the masthead, the
+// content block, the nav rows and their dropdown. The artwork behind it lives
+// in HomeArt/HomeArtStyle.scss.
+//
+// The frame is drawn on a fixed 1920x1080 artboard, so every number here is a
+// literal design pixel multiplied by one of two scaling units — u() and cu(),
+// defined in styles/_frame.scss. Keeping the raw design numbers visible is
+// deliberate: it makes the file diffable against the frame.
+//
+// This file declares --u and --cu on .home, which is what both unit functions
+// read, so it is the root both stylesheets measure against.
+// ---------------------------------------------------------------------------
+
+.home {
+  --u: max(#{math.div(100, $frame-w)}vw, #{math.div(100, $frame-h)}svh);
+  --cu: clamp(0.58px, #{math.div(100, $frame-w)}vw, 1.4px);
+  // Nav row metrics. The selected bar and the dropdown are positioned off
+  // these, so re-pointing them for portrait moves everything together.
+  --nav-w: #{cu(204)};
+  --item-h: #{cu(72)};
+  --item-gap: #{cu(17)};
+  --bar-h: #{cu(61)};
+  --bar-w: calc(100vw - #{cu(17)});
+  --head-pad: #{cu(16)};
+  --drop-gap: #{cu(17)};
+  --drop-h: #{cu(56)};
+  // Both marks are the 56px icon square from the time chip (Figma 1139:1705)
+  // — that square is what the chip collapses into, and both corners are what
+  // it diverges into, so they are necessarily the same size.
+  --corner: #{cu(56)};
+  --rule-w: #{cu(36)};
+  --drop-icon: #{cu(24)};
+  --icon: #{cu(24)};
+  --marker-fs: #{cu(9)};
+  --label-fs: #{cu(20)};
+
+  // Selected-bar palette. Declared here rather than on :root because the dark
+  // gradient references --bar-h, and a var() inside a custom property resolves
+  // in the scope the property is *declared* in — on :root, --bar-h does not
+  // exist and the whole gradient would collapse to invalid.
+  //
+  // Figma's mix-blend-mode: color-burn cannot work here, so #d10000 is that
+  // blend resolved by hand against the #f1f1f1 ground.
+  --bar-fill: linear-gradient(to right, #d10000 13.462%, rgba(209, 0, 0, 0) 100%);
+  --c-cube: #000;
+  --c-on-bar: #fff;
+
+
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  overflow: hidden;
+  background-color: var(--c-surface);
+  background-image: var(--grain);
+  transition: background-color 240ms ease;
+}
+
+// Dark inverts the bar: white rail, red cube.
+//
+// The fill is also the resting status mark, so the mark takes the rail's
+// colour rather than the accent — white here, red in light. That keeps the
+// relationship the light theme establishes: the mark grows into the *rail*,
+// and the cube stays a separate element arriving beside it. Tinting the mark
+// with the accent instead made it read as though it were becoming the cube.
+[data-theme='dark'] .home {
+  --bar-fill: linear-gradient(to right, #fff 13.462%, rgba(255, 255, 255, 0) 100%);
+  --c-cube: #{$accent};
+  --c-on-bar: #{$surface-dark};
+}
+
+
+
+// ---------------------------------------------------------------------------
+// Masthead furniture — anchored to the viewport, not the artboard.
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// The intro chip and the corner marks are the same two elements.
+//
+// Through loading / welcome / time they sit merged at the centre as one chip:
+// --br is its body (which carries the label) and --tl its right-hand icon
+// square. The split then lets each fly to the corner it becomes — --tl to the
+// top-left at 56, --br to the bottom-right at 40. Because they never unmount,
+// the whole intro is one continuous move.
+//
+// Stage geometry, in artboard px, measured from the viewport centre. Figma:
+//   loading 80x40   (1128:1080)  body 40 + icon 40
+//   welcome 176.4x56 (1135:1145) body only
+//   time    232x56   (1135:1152) body 176.4 + icon 56
+// ---------------------------------------------------------------------------
+// The +1px/-1px on the halves is a 2px overlap at the join. Two separately
+// rasterised elements that merely abut leave a hairline of background
+// wherever the shared edge lands on a fractional device pixel — the join sits
+// at exactly 50vw, so that is most widths. The overlap is invisible: both
+// halves are the same opaque red. Outer dimensions are unaffected, since the
+// body grows right and the icon square grows left by the same 1px.
+// Loading and Welcome are the same 176.4x56 chip (Figma 1128:1124 and
+// 1135:1145) — only the word differs. Time adds the 56px icon square on the
+// right. Collapse folds both halves onto the same 56x56 centre square, which
+// is what then diverges.
+.home {
+  --chip-h: #{cu(56)};
+  --chip-body-w: #{cu(176.4)};
+  --chip-body-x: #{cu(-88.2)};
+  --chip-icon-w: 0px;
+  --chip-icon-x: #{cu(88.2)};
+  --chip-label-x: 0px;
+  --chip-font: #{cu(19.6)};
+}
+
+.home.is-time {
+  // +1px/-1px is a 2px overlap at the join. Two separately rasterised
+  // elements that merely abut leave a hairline of background wherever the
+  // shared edge lands on a fractional device pixel. The overlap is invisible
+  // — both halves are the same opaque red — and the outer size is unchanged,
+  // since the body grows right and the icon square grows left by the same 1px.
+  --chip-body-w: calc(#{cu(176.4)} + 1px);
+  --chip-body-x: #{cu(-116)};
+  --chip-icon-w: calc(#{cu(56)} + 1px);
+  --chip-icon-x: calc(#{cu(60.4)} - 1px);
+  // The label centres on the body, not the whole chip, once the icon square
+  // is there: body spans -116..60.4, so its centre is 27.8 left of the chip's.
+  --chip-label-x: #{cu(-27.8)};
+}
+
+// Both halves land on exactly the same square, so the chip reads as having
+// folded into one mark before it splits.
+.home.is-collapse {
+  // Height comes from --corner too, not --chip-h: the two diverge once --cu
+  // hits its clamp, which left the collapsed chip a rectangle on small
+  // screens. Collapsing to exactly the mark it becomes is also the point.
+  --chip-h: var(--corner);
+  --chip-body-w: var(--corner);
+  --chip-body-x: calc(var(--corner) / -2);
+  --chip-icon-w: var(--corner);
+  --chip-icon-x: calc(var(--corner) / -2);
+}
+
+.home__corner {
+  position: absolute;
+  z-index: 2;
+  padding: 0;
+  background: $accent;
+  border: 0;
+  // Everything about the intro is these four properties changing, so one
+  // transition carries both the chip's stage changes and the final split.
+  transition:
+    left $duration-med $ease-out,
+    top $duration-med $ease-out,
+    width $duration-med $ease-out,
+    height $duration-med $ease-out;
+
+  // Merged at the centre for every stage before the split.
+  left: calc(50vw + var(--chip-body-x));
+  top: calc(50svh - var(--chip-h) / 2);
+  width: var(--chip-body-w);
+  height: var(--chip-h);
+
+  &--tl {
+    // Above --br, which follows it in the DOM: during 'collapse' the two
+    // squares are exactly coincident, and at equal z-index the later element
+    // would paint over this one and bury the mode icon.
+    z-index: 3;
+    left: calc(50vw + var(--chip-icon-x));
+    width: var(--chip-icon-w);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    color: #fff;
+  }
+}
+
+// The split, and the parked state that follows it.
+.home.is-opening,
+.home.is-ready {
+  .home__corner--tl {
+    left: 0;
+    top: 0;
+    width: var(--corner);
+    height: var(--corner);
+  }
+
+  .home__corner--br {
+    left: calc(100vw - var(--corner));
+    top: calc(100svh - var(--corner));
+    width: var(--corner);
+    height: var(--corner);
+  }
+}
+
+.home.is-opening .home__corner {
+  transition-duration: $boot-travel;
+  transition-timing-function: $boot-throw;
+}
+
+.home__corner-icon {
+  width: cu(24);
+  height: cu(24);
+}
+
+// The top-left mark is the theme switch. Its focus ring cannot use $accent —
+// that is the square's own colour — so it takes the ink instead, offset clear
+// of the mark.
+button.home__corner {
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.18);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--c-ink-strong);
+    outline-offset: 3px;
+  }
+
+  // In flight during the intro: inert, and no hover affordance.
+  &:disabled {
+    cursor: default;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// The discharge: a rule that rips out from the centre as the pair launches,
+// then burns off. Gives the split something to throw against.
+// ---------------------------------------------------------------------------
+.home__discharge {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  z-index: 2;
+  width: 100%;
+  height: cu(2);
+  margin-top: calc(#{cu(2)} / -2);
+  background: $accent;
+  transform: scaleX(0);
+  animation: boot-discharge 620ms $ease-out 170ms both;
+}
+
+@keyframes boot-discharge {
+  0% {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+  34% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+
+@keyframes boot-label-out {
+  to {
+    opacity: 0;
+  }
+}
+
+// The chip's label. Centred on the body rather than the chip once the icon
+// square joins, which is what --chip-label-x carries.
+.home__boot {
+  position: absolute;
+  left: calc(50vw + var(--chip-label-x));
+  top: 50svh;
+  z-index: 4;
+  font-family: $font-mono;
+  font-weight: 500;
+  font-size: var(--chip-font);
+  line-height: 1;
+  color: #fff;
+  white-space: nowrap;
+  transition: left $duration-med $ease-out;
+}
+
+// All three words occupy the same spot and crossfade, so one hands over to
+// the next instead of cutting. The incoming word rises as the outgoing one
+// sinks, which reads as a ticker rather than a swap.
+//
+// visibility is transitioned with a delay rather than left alone: it drops
+// the inactive words out of the accessibility tree, but only once they have
+// finished fading.
+.home__boot-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  transform: translate(-50%, calc(-50% + 0.42em));
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity $duration-med ease,
+    transform $duration-med $ease-out,
+    visibility 0s linear $duration-med;
+}
+
+.home.is-loading [data-stage='loading'],
+.home.is-welcome [data-stage='welcome'],
+.home.is-time [data-stage='time'] {
+  transform: translate(-50%, -50%);
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s, 0s, 0s;
+}
+
+// The ellipsis cycles rather than blinking as a unit: each dot holds its
+// place and only its opacity rides the wave, so "Loading..." keeps the exact
+// width the frame draws and the centred line never shifts.
+.home__boot-dots {
+  display: inline-flex;
+}
+
+.home__boot-dots span {
+  animation: boot-dot 1.2s ease-in-out infinite;
+
+  &:nth-child(2) {
+    animation-delay: 160ms;
+  }
+
+  &:nth-child(3) {
+    animation-delay: 320ms;
+  }
+}
+
+@keyframes boot-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.25;
+  }
+  20% {
+    opacity: 1;
+  }
+}
+
+.home.is-opening .home__boot {
+  animation: boot-label-out 200ms ease forwards;
+}
+
+// Indented past the top-left mark rather than to the frame's 48px gutter:
+// that mark is now the 56px toggle, so 48 would put the first letter on top
+// of it. The 8px clearance the frame has is preserved.
+.home__meta {
+  position: absolute;
+  z-index: 2;
+  left: calc(var(--corner) + #{cu(12)});
+  top: cu(62);
+  font-family: $font-grotesk;
+  font-weight: 200;
+  font-size: cu(14);
+  line-height: 1.3;
+  color: var(--c-ink-strong);
+}
+
+// ---------------------------------------------------------------------------
+// Content block — 618 wide, 458 tall, at frame (376, 233).
+//
+// Vertically it is 78px above the frame's centre line (233 vs the 311 a plain
+// centre would give), so it is centred and then nudged by 78/1080 of the
+// viewport height. That holds the proportion on any viewport height instead
+// of pinning it to a pixel offset.
+// ---------------------------------------------------------------------------
+.home__content {
+  position: absolute;
+  z-index: 1;
+  left: cu(376);
+  top: 50%;
+  width: cu(618);
+  transform: translateY(calc(-50% - #{math.div(78, $frame-h) * 100}svh));
+}
+
+.home__wordmark {
+  display: block;
+  width: cu(618);
+  height: cu(121.307);
+}
+
+// Sits 11.307px *over* the wordmark's box — the lettering does not reach the
+// bottom of its own plate.
+.home__subtitle {
+  display: flex;
+  align-items: center;
+  gap: cu(16.165);
+  margin-top: cu(-11.307);
+  margin-left: cu(26);
+  height: cu(35.45);
+  font-family: $font-mono;
+  font-weight: 100;
+  font-size: cu(26.127);
+  line-height: 1;
+  color: var(--c-ink-strong);
+  white-space: nowrap;
+}
+
+.home__subtitle-icon {
+  flex: none;
+  color: $accent;
+  width: cu(34.835);
+  height: cu(34.835);
+}
+
+// Rows are absolutely positioned rather than a flex column: when one expands
+// into the selected bar it must stay exactly where its row was, and an
+// absolute row can grow without the others reflowing under it.
+.home__nav {
+  position: relative;
+  width: var(--nav-w);
+  height: calc(3 * var(--item-h) + 2 * var(--item-gap));
+  margin-top: cu(62.55);
+  margin-left: cu(26);
+}
+
+// Every part of a row is absolutely placed so the closed -> open change is a
+// set of interpolable property pairs rather than a reflow. Nothing here uses
+// flow layout, which is what lets the whole thing morph instead of cutting.
+.home__nav-item {
+  // Distance each string travels to become right-aligned inside the head.
+  // JetBrains Mono is monospace with a 0.6em advance (verified against the
+  // frame's own text widths), so a character count is enough to derive the
+  // rendered width — and a derived width is what makes the slide animatable,
+  // where text-align or a left/right swap would simply cut.
+  //
+  // Declared here, not on .home: a custom property substitutes var() in the
+  // scope it is declared in, and --marker-len/--label-len are set per row.
+  --marker-shift: calc(
+    var(--nav-w) - 2 * var(--head-pad) - 0.6 * var(--marker-fs) * var(--marker-len)
+  );
+  --label-shift: calc(
+    var(--nav-w) - 2 * var(--head-pad) - 0.6 * var(--label-fs) * var(--label-len)
+  );
+
+  position: absolute;
+  left: 0;
+  top: calc(var(--i) * (var(--item-h) + var(--item-gap)));
+  width: var(--nav-w);
+  height: var(--item-h);
+  overflow: hidden;
+  text-align: left;
+  transition:
+    width $duration-med $ease-out,
+    height $duration-med $ease-out,
+    opacity $duration-fast ease;
+  @include focus-ring;
+
+  &:hover .home__nav-label,
+  &:focus-visible .home__nav-label {
+    color: $accent;
+  }
+}
+
+// Siblings of the open row hold their space but drop out of sight, so the
+// open row keeps its original offset.
+.home__nav-item.is-dimmed {
+  opacity: 0;
+  pointer-events: none;
+}
+
+// ---------------------------------------------------------------------------
+// The fill — the frame's 5x5 status mark, which is also what becomes the bar.
+//
+// Figma's mix-blend-mode: color-burn cannot work here — .home__content carries
+// a z-index and so isolates its own stacking context, leaving the bar nothing
+// to burn into. The blend is resolved by hand instead; see --bar-fill in
+// global.scss, which also carries the dark variant.
+//
+// background-size is pinned to the full bar width in both states, so at 5px
+// the mark shows only the gradient's opaque left end and reads as a solid
+// square; widening it reveals the fade rather than rescaling it.
+// ---------------------------------------------------------------------------
+.home__nav-fill {
+  position: absolute;
+  left: cu(181);
+  top: cu(11);
+  z-index: 0;
+  width: cu(5);
+  height: cu(5);
+  background-image: var(--bar-fill);
+  background-repeat: no-repeat;
+  background-size: var(--bar-w) 100%;
+  transition:
+    left $duration-med $ease-out,
+    top $duration-med $ease-out,
+    width $duration-med $ease-out,
+    height $duration-med $ease-out;
+}
+
+// Scales up from its left edge once the fill is on its way across.
+.home__nav-cube {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  width: var(--bar-h);
+  height: var(--bar-h);
+  background: var(--c-cube);
+  transform: scale(0);
+  transform-origin: 0 0;
+  transition: transform $duration-med $ease-out;
+}
+
+.home__nav-marker {
+  position: absolute;
+  left: var(--head-pad);
+  top: cu(9);
+  z-index: 2;
+  font-family: $font-mono;
+  font-weight: 400;
+  font-size: var(--marker-fs);
+  line-height: 1;
+  color: var(--c-muted);
+  white-space: nowrap;
+  transition: transform $duration-med $ease-out, color $duration-med $ease-out;
+}
+
+.home__nav-label {
+  position: absolute;
+  left: var(--head-pad);
+  top: calc(var(--item-h) * 0.4444);
+  z-index: 2;
+  font-family: $font-mono;
+  font-weight: 300;
+  font-size: var(--label-fs);
+  line-height: 1;
+  color: var(--c-ink);
+  white-space: nowrap;
+  transition:
+    transform $duration-med $ease-out,
+    top $duration-med $ease-out,
+    color $duration-med $ease-out;
+}
+
+// The single arrow. Closed it sits at the row's right edge; open it has
+// travelled into the cube and flipped to point back.
+.home__nav-icon {
+  position: absolute;
+  left: calc(var(--nav-w) - var(--head-pad) - var(--icon));
+  top: calc(var(--item-h) * 0.5833 - var(--icon) / 2);
+  z-index: 3;
+  width: var(--icon);
+  height: var(--icon);
+  color: $accent;
+  transition:
+    left $duration-med $ease-out,
+    top $duration-med $ease-out,
+    transform $duration-med $ease-out,
+    color $duration-med $ease-out;
+}
+
+// ---------------------------------------------------------------------------
+// Selected bar — Figma node 1102:1070.
+//
+// 1903 wide on the artboard = the viewport less the row's own 17px inset,
+// so the bar runs to the edge and overshoots as the gradient dies out.
+// ---------------------------------------------------------------------------
+.home__nav-item.is-open {
+  z-index: 2;
+  width: var(--bar-w);
+  height: var(--bar-h);
+  overflow: visible;
+
+  .home__nav-fill {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: var(--bar-h);
+  }
+
+  .home__nav-cube {
+    transform: scale(1);
+    // Lands as the fill arrives at the left edge rather than with it.
+    transition-delay: 110ms;
+  }
+
+  // Figma mirrors the whole block to move the arrow to the left, which lands
+  // the marker and the label right-aligned one --head-pad inside the head.
+  .home__nav-marker {
+    transform: translateX(var(--marker-shift));
+    color: var(--c-on-bar);
+  }
+
+  .home__nav-label {
+    top: calc(var(--bar-h) * 0.4262);
+    transform: translateX(var(--label-shift));
+    color: var(--c-on-bar);
+  }
+
+  .home__nav-icon {
+    left: calc((var(--bar-h) - var(--icon)) / 2);
+    top: calc((var(--bar-h) - var(--icon)) / 2);
+    transform: rotate(180deg);
+    // Inside the cube rather than on the bar, so white works over both the
+    // light theme's black cube and the dark theme's red one.
+    color: #fff;
+  }
+
+  &:hover .home__nav-label,
+  &:focus-visible .home__nav-label {
+    color: var(--c-on-bar);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Dropdown rails — Figma "Services / rail" (nodes 1101:168, :177, :185, :313).
+// Hung off the open row's offset so they always land directly beneath it.
+// ---------------------------------------------------------------------------
+.home__drop {
+  position: absolute;
+  left: 0;
+  top: calc(
+    var(--i) * (var(--item-h) + var(--item-gap)) + var(--bar-h) + var(--drop-gap)
+  );
+  z-index: 2;
+  width: var(--nav-w);
+}
+
+// One --brand value per rail drives the mark, the signal underline and the
+// hover state, so a brand only has to be named in one place.
+.home__drop-item {
+  --brand: #{$accent};
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: var(--drop-h);
+  @include focus-ring;
+
+  &[data-brand='twitch'] {
+    --brand: var(--c-brand-twitch);
+  }
+
+  // The mark is the X logo, so it takes X's black rather than the old
+  // Twitter blue.
+  &[data-brand='twitter'] {
+    --brand: var(--c-brand-x);
+  }
+
+  &[data-brand='discord'] {
+    --brand: var(--c-brand-discord);
+  }
+
+  &[data-brand='youtube'] {
+    --brand: var(--c-brand-youtube);
+  }
+
+  &[data-brand='throne'] {
+    --brand: var(--c-brand-throne);
+  }
+
+  &[data-brand='kofi'] {
+    --brand: var(--c-brand-kofi);
+  }
+
+  // A full-width hover fill plus hairline dividers (below) read the four
+  // rails as one connected list — replaces the old per-row underline, which
+  // only sat under the icon and left the rest of the row feeling bare.
+  transition: background-color $duration-fast ease;
+
+  &:hover,
+  &:focus-visible {
+    background: color-mix(in srgb, var(--brand) 10%, transparent);
+  }
+
+  &:hover .home__drop-label,
+  &:focus-visible .home__drop-label {
+    color: var(--brand);
+  }
+}
+
+// Divider between rows, not above the first or below the last — reads as one
+// list rather than four floating buttons.
+.home__drop-row + .home__drop-row .home__drop-item {
+  border-top: 1px solid var(--c-line);
+}
+
+// Brand marks stand in for the rail arrow, so no 180deg flip here. The mark
+// holds still on hover — only the label changes — so nothing jitters under
+// the cursor.
+//
+// Centred over the signal underline rather than sitting flush left: the
+// margin is half the difference between the rule and the mark, so the two
+// stay concentric at every breakpoint.
+.home__drop-icon {
+  flex: none;
+  width: var(--drop-icon);
+  height: var(--drop-icon);
+  margin-left: calc((var(--rule-w) - var(--drop-icon)) / 2);
+  color: var(--brand);
+}
+
+.home__drop-label {
+  font-family: $font-mono;
+  font-weight: 300;
+  font-size: cu(20);
+  line-height: 1;
+  color: var(--c-ink);
+  white-space: nowrap;
+  transition: color $duration-fast ease;
+}
+
+// ---------------------------------------------------------------------------
+// Entrance — the frame is a static composition, so this only eases it in.
+// ---------------------------------------------------------------------------
+@keyframes home-rise {
+  from {
+    opacity: 0;
+    transform: translateY(cu(20));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes home-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Rails arrive after the bar has finished widening, so the two reads as one
+// move: expand, then drop.
+@keyframes home-drop {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--drop-gap)));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.home__drop-row {
+  animation: home-drop $duration-med $ease-out backwards;
+  animation-delay: calc(var(--j) * 60ms + #{$duration-med});
+}
+
+
+.home__wordmark,
+.home__subtitle,
+.home__nav-item,
+.home__meta {
+  animation: home-rise $duration-slow $ease-out 760ms backwards;
+}
+
+.home__subtitle {
+  animation-delay: 830ms;
+}
+
+.home__nav-item:nth-child(1) {
+  animation-delay: 900ms;
+}
+
+.home__nav-item:nth-child(2) {
+  animation-delay: 955ms;
+}
+
+.home__nav-item:nth-child(3) {
+  animation-delay: 1010ms;
+}
+
+.home__meta {
+  animation-delay: 1070ms;
+}
+
+@include reduced-motion {
+  .home__corner,
+  .home__boot-dots span,
+  .home__discharge,
+  .home__wordmark,
+  .home__subtitle,
+  .home__nav-item,
+  .home__meta,
+  .home__drop-row {
+    animation: none;
+  }
+
+  .home__corner,
+  .home__nav-item,
+  .home__nav-fill,
+  .home__nav-cube,
+  .home__nav-icon,
+  .home__nav-marker,
+  .home__nav-label,
+  .home__drop-label {
+    transition: none;
+  }
+
+  // The intro moves the corners with transitions declared under
+  // .home.is-opening, which outranks a bare .home__corner rule — a media
+  // query adds no specificity of its own. Match those selectors to kill the
+  // travel; the chip then cuts straight to its parked state at each stage.
+  .home__corner,
+  .home.is-opening .home__corner,
+  .home__boot {
+    transition: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Portrait and narrow viewports.
+//
+// Triggered on aspect ratio as well as width: cover-scaling a 16:9 artboard
+// into a portrait window inflates the artwork while the width-clamped copy
+// shrinks, which buries the nav under the character. So this is an adaptation
+// rather than a translation — the artwork is re-pointed in viewport units and
+// the copy is sized against height as well as width.
+// ---------------------------------------------------------------------------
+@media (max-width: $bp-md), (max-aspect-ratio: 1 / 1) {
+  .home {
+    --corner: clamp(2.1rem, 5.6vw, 3.15rem);
+
+    // Row metrics re-pointed for portrait. --nav-w must stay a concrete
+    // length: the open bar consumes it in a calc where a percentage would
+    // resolve against the full-bleed bar instead of the nav.
+    --nav-w: min(calc(100vw - 2 * #{$space-6}), max(13rem, 30vw));
+    --item-h: clamp(3.1rem, 7.2svh, 4.4rem);
+    --item-gap: clamp(0.5rem, 1.4svh, 1rem);
+    --bar-h: calc(var(--item-h) * 0.847);
+    --bar-w: calc(100vw - #{$space-6});
+    --head-pad: #{$space-3};
+    --drop-gap: var(--item-gap);
+    --drop-h: clamp(2.6rem, 6svh, 3.6rem);
+    --rule-w: 2rem;
+    --drop-icon: clamp(1.25rem, 2.8vw, 1.6rem);
+    --icon: clamp(1.25rem, 2.8vw, 1.6rem);
+    --marker-fs: clamp(0.5rem, 1.15vw, 0.7rem);
+    --label-fs: clamp(1rem, 2.6vw, 1.45rem);
+  }
+
+
+  // The band is a -45deg bar, so its upper edge is the line y = C - x. Keeping
+  // the nav legible means keeping that edge below the nav block at every size,
+  // which fixes C at 100vw + 54svh. Converting the edge back to a centre:
+  //   centre.y = C - 50vw + 0.707 * 130vw  ->  141.91vw + 54svh
+
+  // Sized against height so the figure holds its proportion from a 640px
+  // phone to a 1180px tablet, where sizing against width would double it.
+  //   height 109.4svh, width 109.4 / (2087.97 / 1631.904) = 85.5svh
+  //   left   60vw (head at 60% of the viewport) - 55.4% of the figure width
+  //   top    42svh, putting the head at ~58svh, clear of the copy
+
+
+  .home__content {
+    left: $space-6;
+    right: $space-6;
+    top: clamp(2.5rem, 13svh, 7rem);
+    width: auto;
+    transform: none;
+  }
+
+  .home__wordmark {
+    width: min(74vw, 420px);
+    height: auto;
+  }
+
+  .home__subtitle {
+    gap: $space-2;
+    margin-top: clamp(0.35rem, 1svh, 0.75rem);
+    margin-left: 0;
+    height: auto;
+    font-size: clamp(0.85rem, 3.4vw, 1.75rem);
+  }
+
+  .home__subtitle-icon {
+    width: 1.45em;
+    height: 1.45em;
+  }
+
+  .home__nav {
+    margin-top: clamp(1.25rem, 3.8svh, 2.5rem);
+    margin-left: 0;
+  }
+
+  .home__nav-marker {
+    top: 0.65rem;
+  }
+
+  .home__nav-fill {
+    left: calc(var(--nav-w) - var(--head-pad) - 4px);
+    top: 0.7rem;
+    width: 4px;
+    height: 4px;
+  }
+
+  .home__drop-label {
+    font-size: clamp(1rem, 2.6vw, 1.45rem);
+  }
+
+  // Indented past the corner mark rather than to the content gutter, so the
+  // two can never collide as the mark scales.
+  .home__meta {
+    left: calc(var(--corner) + #{$space-2});
+    right: $space-6;
+    top: $space-6;
+    font-size: clamp(0.5rem, 1.3vw, 0.8rem);
+    letter-spacing: 0.08em;
+  }
+
+
+}

@@ -1,32 +1,62 @@
 // ---------------------------------------------------------------------------
-// Design tokens — edit these to re-skin the whole site.
+// Design tokens.
+//
+// The 2nd-version design is a light, print-like system taken from the Figma
+// "Personal Portfolio" file. Values below are read straight off the Home Page
+// frame (node 1096:1019) — change them here to re-skin the site.
 // ---------------------------------------------------------------------------
 
-// Color
-$bg: #0a0a0d;
-$bg-panel: #131318;
-$bg-panel-alt: #1a1a20;
+// Surface + ink. These are the light values; the dark set below mirrors them,
+// and global.scss emits both as --c-* custom properties so a theme can be
+// switched at runtime. Use the custom properties, not these Sass variables,
+// anywhere a colour should follow the theme.
+$surface: #f1f1f1; // page background
+$ink: #17191b; // primary UI text (nav labels)
+$ink-strong: #000000; // display copy (tagline, masthead meta)
+$muted: #737577; // route markers / secondary labels
 
-$red: #e0342f;
-$red-bright: #ff4438;
-$red-dim: #5c1614;
+// Dark mode — Figma "Home Page - Dark Mode" (node 1135:1159).
+// The frame sets route markers to pure white and nav labels to #f0f3f6, so the
+// secondary text is nominally brighter than the primary. Rendered it reads
+// correctly because the marker is 9px against a 20px label, so the hierarchy
+// comes from size; the frame's values are kept as drawn.
+// The Background layer's own fill. The frame behind it is #1d2023, but the
+// layer covers it, so this is what actually paints.
+$surface-dark: #1d2024;
+$ink-dark: #f0f3f6;
+$ink-strong-dark: #ffffff;
+$muted-dark: #ffffff;
 
-$white: #f2f1ee;
-$gray: #8b8b93;
-$gray-dim: #4a4a52;
-
-$border: rgba($white, 0.12);
-$border-strong: rgba($white, 0.22);
-
-// Brand colors — used only for the social-link icons at rest.
-$brand-twitch: #9146ff;
-$brand-youtube: #ff0000;
-$brand-twitter: #1d9bf0;
-$brand-discord: #5865f2;
+// Accent
+$accent: #e22f24; // corner marks, status dots, arrows
+$band: #ba443e; // the diagonal artwork band (deliberately duller than $accent)
 
 // Typography
-$font-mono: 'Space Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
-$font-display: 'Rajdhani', 'Arial Narrow', sans-serif;
+// JetBrains Mono carries the whole interface. Pragmatica is a commercial face
+// and is not on Google Fonts, so Inter ExtraLight stands in for the masthead
+// meta line — closest free neo-grotesque match.
+$font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+$font-grotesk: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+
+// Brand marks — the dropdown rails are the one place the page leaves its
+// red/black/light palette. $brand-x is the X wordmark's black, which is what
+// the Twitter rail actually draws.
+$brand-twitch: #9146ff;
+$brand-youtube: #ff0000;
+$brand-discord: #5865f2;
+$brand-x: #000000;
+$brand-kofi: #ff5e5b;
+// Unverified — Throne publishes no public brand value I could confirm.
+$brand-throne: #141428;
+
+// X and Throne are near-black, which disappears on the dark surface. Both are
+// inverted there; the rest read fine against either ground.
+$brand-x-dark: #ffffff;
+$brand-throne-dark: #d8d8e4;
+
+// The artboard every Home Page measurement is expressed against.
+$frame-w: 1920;
+$frame-h: 1080;
 
 // Spacing scale
 $space-1: 0.25rem;
@@ -37,10 +67,8 @@ $space-6: 1.5rem;
 $space-8: 2rem;
 $space-12: 3rem;
 $space-16: 4rem;
-
-// Layout
-$card-radius: 2px;
-$max-width: 1100px;
+$space-20: 5rem;
+$space-24: 6rem;
 
 // Breakpoints
 $bp-sm: 480px;
@@ -51,5 +79,14 @@ $bp-lg: 1024px;
 $ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 $duration-fast: 150ms;
 $duration-med: 320ms;
-// Keep in sync with LEAVE_DURATION in BootIntro.jsx
-$leave-duration: 650ms;
+$duration-slow: 600ms;
+// How long the corner accents take to travel from the loading chip to their
+// corners. Keep in sync with TRAVEL_MS in Home.jsx.
+$boot-travel: 820ms;
+// Easing for the throw segment of the split — quick launch, long settle.
+$boot-throw: cubic-bezier(0.34, 0.86, 0.28, 1);
+// How far the pair presses together before flying apart, in artboard px.
+$boot-squeeze: 16;
+// How long the artwork takes to unveil outward from the discharge line.
+$boot-unveil: 860ms;
+$boot-unveil-ease: cubic-bezier(0.22, 1, 0.3, 1);

@@ -18,8 +18,9 @@ html {
 }
 
 body {
-  background: $bg;
-  color: $white;
+  background: var(--c-surface);
+  color: var(--c-ink);
+  transition: background-color 240ms ease;
   font-family: $font-mono;
   line-height: 1.5;
   min-height: 100vh;

@@ -1,0 +1,266 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+@use '../../../styles/frame' as *;
+
+// ---------------------------------------------------------------------------
+// HomeArt — the Home Page artwork (Figma node 1105:126).
+//
+// Owns the cover-scaled stage, the diagonal band, the character plate and its
+// parallax depth. The page's own furniture lives in HomeStyle.scss; the two
+// meet only through the custom properties --u / --cu, declared on .home.
+// ---------------------------------------------------------------------------
+
+.home__art {
+  // Travel of a --depth: 1 layer at the pointer's extreme.
+  --parallax: #{cu(42)};
+  // One design px of the character plate. Matches --u while the figure is
+  // artboard-scaled; the portrait block re-points it to the figure's own size.
+  --art-k: var(--u);
+  // How the figure is anchored horizontally; the portrait block re-points it,
+  // and the unveil's settle keyframe reuses it so one keyframe serves both.
+  --figure-x: -50%;
+}
+
+// ---------------------------------------------------------------------------
+// Artwork — the cover-scaled artboard.
+// ---------------------------------------------------------------------------
+.home__art {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 0;
+  width: u($frame-w);
+  height: u($frame-h);
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+// A 5055.569 x 408 bar rotated -45deg about frame point (1119.93, 771.77).
+.home__band {
+  position: absolute;
+  left: u(1119.93);
+  top: u(771.77);
+  width: u(5055.569);
+  height: u(408);
+  transform: translate(-50%, -50%) rotate(-45deg);
+  background: $band;
+}
+
+// Character artwork frame: 1631.904 x 2087.97, centred on frame x 1232.95,
+// starting 179px above the top edge.
+.home__figure {
+  position: absolute;
+  left: calc(50% + #{u(272.95)});
+  top: u(-179);
+  width: u(1631.904);
+  height: u(2087.97);
+  transform: translateX(var(--figure-x));
+}
+
+// Every art layer shares one box, offset 8/21 inside the figure. Expressed
+// as percentages of the figure so narrow viewports can re-point the figure
+// alone and bring the whole stack with it.
+//   left  8        / 1631.904 =  0.49022%
+//   top   21       / 2087.97  =  1.00576%
+//   width 1623.904 / 1631.904 = 99.50978%
+//   high  2066.97  / 2087.97  = 98.99424%
+//
+// --px/--py come from the pointer (see usePointerParallax) and --depth is set
+// per layer below, so one pointer position pulls the flat stack apart into a
+// diorama. Depth climbs back-to-front: the glow behind barely shifts, the
+// near bolt swings widest. Vertical travel is damped to 0.55 — the eye reads
+// sideways parallax as depth and vertical parallax as the page sliding.
+.home__layer {
+  --depth: 0.5;
+
+  position: absolute;
+  left: 0.49022%;
+  top: 1.00576%;
+  width: 99.50978%;
+  height: 98.99424%;
+  object-fit: cover;
+  transform: translate3d(
+    calc(var(--px, 0) * var(--depth) * var(--parallax)),
+    calc(var(--py, 0) * var(--depth) * var(--parallax) * 0.55),
+    0
+  );
+}
+
+.home__layer--bolt-3 {
+  --depth: 0.34;
+}
+
+.home__layer--bolt-2 {
+  --depth: 0.56;
+}
+
+.home__layer--flame {
+  --depth: 0.18;
+
+  opacity: 0.82;
+}
+
+// The topmost bolt layer alone sits flush with the figure origin, and being
+// nearest the viewer it travels furthest.
+.home__layer--bolt-1 {
+  --depth: 1.2;
+
+  left: 0;
+  top: 0;
+}
+
+// The character plate carries faint crystal sketches around the figure that
+// the design masks away with a stroked silhouette (Figma "Vector 1").
+//
+// Figma gives the mask as a 1297.809 x 1684.633 box offset 343.29/229.589
+// inside the 1623.904 x 2066.97 plate. Expressed as percentages both the size
+// and the position scale with --u for free. CSS percentage mask-position is
+// a proportion of the *leftover* space, hence the division:
+//   x: 343.29  / (1623.904 - 1297.809) = 105.273%
+//   y: 229.589 / (2066.97  - 1684.633) =  60.049%
+// Shadow on the wrapper, mask on the image inside it. CSS applies filter
+// before mask, so a drop-shadow set on the masked element is clipped away by
+// that same mask — the offset shadow falls entirely outside the silhouette.
+//
+// Offsets are in design px scaled by --art-k, so the shadow reads exactly as
+// -29px 18px 22px on the 1920x1080 artboard and stays in proportion elsewhere.
+.home__layer--char {
+  --depth: 0.78;
+
+  filter: drop-shadow(
+    calc(-29 * var(--art-k)) calc(18 * var(--art-k)) calc(22 * var(--art-k)) rgba(0, 0, 0, 0.25)
+  );
+}
+
+.home__char-plate {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  -webkit-mask-image: url('../../../assets/character/char-mask.svg');
+  mask-image: url('../../../assets/character/char-mask.svg');
+  -webkit-mask-size: 79.919% 81.503%;
+  mask-size: 79.919% 81.503%;
+  -webkit-mask-position: 105.273% 60.049%;
+  mask-position: 105.273% 60.049%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+// The artwork does not fade or flash in — it is unveiled. The discharge rule
+// rips across the centre and the scene opens outward from that same line, so
+// the rule reads as the thing that cut it open. A clip is graphic rather than
+// strobing, which suits the design better than a flicker and carries no
+// photosensitivity cost at all.
+.home__art {
+  animation: home-unveil $boot-unveil $boot-unveil-ease 260ms backwards;
+}
+
+@keyframes home-unveil {
+  from {
+    clip-path: inset(50% 0 50% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+// A slight push-in under the unveil, so the scene settles toward the viewer
+// instead of simply appearing. Shares the unveil's easing so they read as one
+// move. --figure-x keeps the portrait block's own anchoring intact.
+.home__figure {
+  animation: home-settle $boot-unveil $boot-unveil-ease 260ms backwards;
+}
+
+@keyframes home-settle {
+  from {
+    transform: translateX(var(--figure-x)) scale(1.05);
+  }
+  to {
+    transform: translateX(var(--figure-x)) scale(1);
+  }
+}
+
+// One soft dip per bolt layer, staggered, once the scene is up — the lightning
+// settling rather than strobing. A single low-amplitude dip per element, so
+// nothing here reads as a flash.
+@keyframes bolt-settle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.72;
+  }
+}
+
+.home__layer--bolt-1 {
+  animation: bolt-settle 460ms ease-in-out 980ms both;
+}
+
+.home__layer--bolt-2 {
+  animation: bolt-settle 520ms ease-in-out 1080ms both;
+}
+
+.home__layer--bolt-3 {
+  animation: bolt-settle 500ms ease-in-out 1180ms both;
+}
+
+@include reduced-motion {
+  .home__art,
+  .home__figure,
+  .home__layer {
+    animation: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Portrait and narrow viewports — see HomeStyle.scss for why this triggers on
+// aspect ratio as well as width.
+// ---------------------------------------------------------------------------
+@media (max-width: $bp-md), (max-aspect-ratio: 1 / 1) {
+  .home__art {
+    // Figure is sized in svh here, not off the artboard: 85.5 / 1631.904.
+    --art-k: calc(0.0523928 * 1svh);
+  }
+
+  // Cover-scaling puts the artboard origin several hundred px off-screen, so
+  // the stage is collapsed onto the viewport and its children re-pointed.
+  .home__art {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    transform: none;
+  }
+
+  .home__band {
+    left: 50%;
+    top: calc(141.91vw + 54svh);
+    width: 300vw;
+    height: 130vw;
+  }
+
+  .home__figure {
+    --figure-x: 0%;
+
+    left: calc(60vw - 47.4svh);
+    top: 42svh;
+    width: 85.5svh;
+    height: 109.4svh;
+  }
+
+  // Lifts the copy off the lightning without hiding the character below it.
+  .home__art::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--c-surface) 95%, transparent) 0%,
+      color-mix(in srgb, var(--c-surface) 88%, transparent) 38%,
+      color-mix(in srgb, var(--c-surface) 40%, transparent) 52%,
+      color-mix(in srgb, var(--c-surface) 0%, transparent) 64%
+    );
+  }
+}
