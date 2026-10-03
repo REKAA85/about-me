@@ -24,6 +24,7 @@ body {
   font-family: $font-mono;
   line-height: 1.5;
   min-height: 100vh;
+  min-height: 100svh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -62,5 +63,6 @@ p {
 
 #root {
   min-height: 100vh;
+  min-height: 100svh;
   position: relative;
 }
