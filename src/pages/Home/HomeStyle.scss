@@ -537,8 +537,9 @@ button.home__corner {
     color $duration-med $ease-out;
 }
 
-// The single arrow. Closed it sits at the row's right edge; open it has
-// travelled into the cube and flipped to point back.
+// The section glyph and the back arrow share one slot and travel together.
+// Closed, the glyph shows at the row's right edge; open, both have travelled
+// into the cube and the arrow, flipped to point back, has faded in over it.
 .home__nav-icon {
   position: absolute;
   left: calc(var(--nav-w) - var(--head-pad) - var(--icon));
@@ -551,7 +552,18 @@ button.home__corner {
     left $duration-med $ease-out,
     top $duration-med $ease-out,
     transform $duration-med $ease-out,
+    opacity $duration-med $ease-out,
     color $duration-med $ease-out;
+}
+
+// The section glyphs are 20px in Figma; the slot stays the arrow's 24 so
+// every position computed off --icon is unchanged.
+.home__nav-glyph {
+  padding: calc(var(--icon) * 2 / 24);
+}
+
+.home__nav-back {
+  opacity: 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -595,10 +607,18 @@ button.home__corner {
   .home__nav-icon {
     left: calc((var(--bar-h) - var(--icon)) / 2);
     top: calc((var(--bar-h) - var(--icon)) / 2);
-    transform: rotate(180deg);
     // Inside the cube rather than on the bar, so white works over both the
     // light theme's black cube and the dark theme's red one.
     color: #fff;
+  }
+
+  .home__nav-glyph {
+    opacity: 0;
+  }
+
+  .home__nav-back {
+    opacity: 1;
+    transform: rotate(180deg);
   }
 
   &:hover .home__nav-label,

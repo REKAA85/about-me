@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import HomeArt from "./HomeArt/HomeArt";
 import { ArrowDownRight, ArrowRight } from "@/components/icons/ArrowIcons";
+import { NavIcon } from "@/components/icons/NavIcons";
 import { BrandIcon } from "@/components/icons/BrandIcons";
 import { BOOT_IMAGES, WORDMARK } from "./heroImages";
 import { useBootSequence } from "@/hooks/useBootSequence";
@@ -24,6 +25,7 @@ const SECTIONS = [
     id: "links",
     marker: "STREAM / SOCIAL MEDIA",
     label: "Links",
+    glyph: "link",
     items: [
       { icon: "twitch", label: "Twitch", href: "https://twitch.tv/rekaa_85" },
       { icon: "twitter", label: "Twitter", href: "https://x.com/REKAA_85" },
@@ -43,13 +45,14 @@ const SECTIONS = [
     id: "services",
     marker: "COMMISSIONS / DONATE",
     label: "Services",
+    glyph: "edit",
     // TODO: real Throne / Ko-fi URLs once they exist.
     items: [
       { icon: "throne", label: "Throne", href: "#" },
       { icon: "kofi", label: "Ko-fi", href: "#" },
     ],
   },
-  { id: "art-archive", marker: "ART OF REKAA", label: "Art Archive" },
+  { id: "art-archive", marker: "ART OF REKAA", label: "Art Archive", glyph: "image" },
 ];
 
 export default function Home({ onNavigate }) {
@@ -62,6 +65,9 @@ export default function Home({ onNavigate }) {
   const booting = phase !== "opening" && phase !== "ready";
   // The icon arrives with the time stage and stays on as the toggle's face.
   const showIcon = phase !== "loading" && phase !== "welcome";
+  // Through the intro it marks the time of day; once the toggle goes live it
+  // shows the theme instead — sun for light, moon for dark.
+  const cornerIcon = phase === "ready" ? (theme === "dark" ? "night" : "day") : band;
   const clock = formatClock(now);
   const [openId, setOpenId] = useState(null);
   const open = SECTIONS.find((s) => s.id === openId) ?? null;
@@ -96,9 +102,10 @@ export default function Home({ onNavigate }) {
           split simply lets each fly to the corner it becomes. Nothing is
           swapped or re-mounted, so there is no seam.
 
-          --tl is also the theme switch, and keeps the time-of-day icon as its
-          face. It stays disabled until the sequence ends, so it is neither
-          focusable nor clickable while still in flight. */}
+          --tl is also the theme switch. Its face is the time-of-day icon
+          until the sequence ends, then the sun or moon for the current
+          theme. It stays disabled until then, so it is neither focusable nor
+          clickable while still in flight. */}
       <button
         type="button"
         className="home__corner home__corner--tl"
@@ -107,7 +114,7 @@ export default function Home({ onNavigate }) {
         aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
         title={`${bandLabel(band)} — ${clock}`}
       >
-        {showIcon && <TimeIcon band={band} className="home__corner-icon" />}
+        {showIcon && <TimeIcon band={cornerIcon} className="home__corner-icon" />}
       </button>
       <span className="home__corner home__corner--br" aria-hidden="true" />
 
@@ -191,9 +198,13 @@ export default function Home({ onNavigate }) {
                     <span className="home__nav-cube" aria-hidden="true" />
                     <span className="home__nav-marker">{section.marker}</span>
                     <span className="home__nav-label">{section.label}</span>
-                    {/* One arrow for both states: it travels into the cube and
-                    flips to point back. */}
-                    <ArrowRight className="home__nav-icon" />
+                    {/* The section glyph at rest; the back arrow once open.
+                    Both travel into the cube and cross-fade on the way. */}
+                    <NavIcon
+                      name={section.glyph}
+                      className="home__nav-icon home__nav-glyph"
+                    />
+                    <ArrowRight className="home__nav-icon home__nav-back" />
                   </button>
                 );
               })}
