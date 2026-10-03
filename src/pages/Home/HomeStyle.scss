@@ -85,10 +85,10 @@
 // The intro chip and the corner marks are the same two elements.
 //
 // Through loading / welcome / time they sit merged at the centre as one chip:
-// --br is its body (which carries the label) and --tl its right-hand icon
-// square. The split then lets each fly to the corner it becomes — --tl to the
-// top-left at 56, --br to the bottom-right at 40. Because they never unmount,
-// the whole intro is one continuous move.
+// --body is its body (which carries the label) and --switch its right-hand
+// icon square. The split then lets each fly to the corner it becomes —
+// --switch, the theme toggle, to the bottom-right and --body to the top-left.
+// Because they never unmount, the whole intro is one continuous move.
 //
 // Stage geometry, in artboard px, measured from the viewport centre. Figma:
 //   loading 80x40   (1128:1080)  body 40 + icon 40
@@ -163,8 +163,8 @@
   width: var(--chip-body-w);
   height: var(--chip-h);
 
-  &--tl {
-    // Above --br, which follows it in the DOM: during 'collapse' the two
+  &--switch {
+    // Above --body, which follows it in the DOM: during 'collapse' the two
     // squares are exactly coincident, and at equal z-index the later element
     // would paint over this one and bury the mode icon.
     z-index: 3;
@@ -177,17 +177,29 @@
   }
 }
 
+// Parked, the corners are shared with the other pages' own marks, so a page
+// transition holds them still while the wipe passes beneath (global.scss).
+.home.is-ready {
+  .home__corner--body {
+    view-transition-name: corner-tl;
+  }
+
+  .home__corner--switch {
+    view-transition-name: corner-br;
+  }
+}
+
 // The split, and the parked state that follows it.
 .home.is-opening,
 .home.is-ready {
-  .home__corner--tl {
+  .home__corner--body {
     left: 0;
     top: 0;
     width: var(--corner);
     height: var(--corner);
   }
 
-  .home__corner--br {
+  .home__corner--switch {
     left: calc(100vw - var(--corner));
     top: calc(100svh - var(--corner));
     width: var(--corner);

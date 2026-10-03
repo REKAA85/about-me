@@ -14,6 +14,10 @@ import "./HomeStyle.scss";
 // take to reach their corners.
 const TRAVEL_MS = 820;
 
+// The intro plays once per visit. Home unmounts when another page opens, so
+// this lives outside the component to survive the trip back.
+let introPlayed = false;
+
 // Markers and labels are the frame's own copy (nodes 1101:60 / 1101:69 /
 // 1101:103). Links carries the four rails drawn in Figma (1101:168, :177,
 // :185, :313) in their numbered order.
@@ -56,7 +60,8 @@ const SECTIONS = [
 ];
 
 export default function Home({ onNavigate }) {
-  const phase = useBootSequence(BOOT_IMAGES, TRAVEL_MS);
+  const [skipIntro] = useState(() => introPlayed);
+  const phase = useBootSequence(BOOT_IMAGES, TRAVEL_MS, skipIntro);
   const { theme, toggle: toggleTheme } = useTheme();
   // Frozen at mount so the clock shown in the intro cannot tick mid-sequence.
   const [now] = useState(() => new Date());
@@ -73,6 +78,10 @@ export default function Home({ onNavigate }) {
   const open = SECTIONS.find((s) => s.id === openId) ?? null;
 
   const close = useCallback(() => setOpenId(null), []);
+
+  useEffect(() => {
+    if (phase === "ready") introPlayed = true;
+  }, [phase]);
 
   useEffect(() => {
     if (!openId) return undefined;
@@ -98,17 +107,18 @@ export default function Home({ onNavigate }) {
 
       {/* These two are the intro chip and the corner marks both. Through
           'loading' / 'welcome' / 'time' they sit merged at the centre as one
-          chip — --tl is its right-hand icon square, --br its body — and the
-          split simply lets each fly to the corner it becomes. Nothing is
+          chip — --switch is its right-hand icon square, --body its body —
+          and the split simply lets each fly to the corner it becomes:
+          --switch to the bottom-right, --body to the top-left. Nothing is
           swapped or re-mounted, so there is no seam.
 
-          --tl is also the theme switch. Its face is the time-of-day icon
+          --switch is also the theme switch. Its face is the time-of-day icon
           until the sequence ends, then the sun or moon for the current
           theme. It stays disabled until then, so it is neither focusable nor
           clickable while still in flight. */}
       <button
         type="button"
-        className="home__corner home__corner--tl"
+        className="home__corner home__corner--switch"
         onClick={toggleTheme}
         disabled={phase !== "ready"}
         aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
@@ -116,7 +126,7 @@ export default function Home({ onNavigate }) {
       >
         {showIcon && <TimeIcon band={cornerIcon} className="home__corner-icon" />}
       </button>
-      <span className="home__corner home__corner--br" aria-hidden="true" />
+      <span className="home__corner home__corner--body" aria-hidden="true" />
 
       {phase === "opening" && (
         <span className="home__discharge" aria-hidden="true" />

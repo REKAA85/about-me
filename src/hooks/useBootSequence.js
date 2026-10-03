@@ -27,10 +27,14 @@ function preload(src) {
 // single square holding the mode icon — both halves stack exactly, so it
 // reads as one — and 'opening' is where they diverge to their corners.
 // 'ready' just marks the end.
-export function useBootSequence(sources, travelMs) {
-  const [phase, setPhase] = useState('loading')
+//
+// With skip set the sequence starts at 'ready' — used when the visitor comes
+// back to home from another page and has already sat through it once.
+export function useBootSequence(sources, travelMs, skip = false) {
+  const [phase, setPhase] = useState(skip ? 'ready' : 'loading')
 
   useEffect(() => {
+    if (skip) return undefined
     let cancelled = false
     const startedAt = performance.now()
 
@@ -50,7 +54,7 @@ export function useBootSequence(sources, travelMs) {
     return () => {
       cancelled = true
     }
-  }, [sources])
+  }, [sources, skip])
 
   useEffect(() => {
     const next = {

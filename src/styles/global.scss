@@ -65,3 +65,86 @@
     @include dark-tokens;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Page transitions — see hooks/useHashRoute.js.
+//
+// A diagonal wipe cut at the artwork band's -45deg. Going into a page, the
+// new one sweeps in over home from the left; going back, the page sweeps
+// away to the left and uncovers home again. The corner marks are named on
+// both sides, so they hold still above the wipe instead of being swept.
+//
+// The clip is a quadrilateral whose leading edge runs from (--edge, top) to
+// (--edge - 30%, bottom). Its left points sit far off-screen so the shape
+// never folds over itself; --edge runs 0% (hidden) to 130% (covering).
+// ---------------------------------------------------------------------------
+@keyframes page-wipe-in {
+  from {
+    clip-path: polygon(-50% 0, 0% 0, -30% 100%, -50% 100%);
+  }
+  to {
+    clip-path: polygon(-50% 0, 130% 0, 100% 100%, -50% 100%);
+  }
+}
+
+@keyframes page-wipe-out {
+  from {
+    clip-path: polygon(-50% 0, 130% 0, 100% 100%, -50% 100%);
+  }
+  to {
+    clip-path: polygon(-50% 0, 0% 0, -30% 100%, -50% 100%);
+  }
+}
+
+// The page being covered sinks back slightly, drifting with the advancing
+// edge, so the wipe reads as a layer arriving over it rather than a flat swap.
+@keyframes page-recede {
+  to {
+    opacity: 0.6;
+    transform: translateX(3%);
+  }
+}
+
+// Coming back, home settles in from the right instead, so it travels with
+// the retreating edge rather than against it.
+@keyframes page-return {
+  from {
+    opacity: 0.6;
+    transform: translateX(3%);
+  }
+}
+
+::view-transition-group(root) {
+  animation-duration: 640ms;
+  animation-timing-function: $ease-out;
+}
+
+:root[data-nav='forward'] {
+  &::view-transition-old(root) {
+    animation: page-recede 640ms $ease-out both;
+  }
+
+  &::view-transition-new(root) {
+    animation: page-wipe-in 640ms $ease-out both;
+  }
+}
+
+:root[data-nav='back'] {
+  // The outgoing page has to stay on top to be wiped off home.
+  &::view-transition-old(root) {
+    z-index: 1;
+    animation: page-wipe-out 640ms $ease-out both;
+  }
+
+  &::view-transition-new(root) {
+    animation: page-return 640ms $ease-out both;
+  }
+}
+
+@include reduced-motion {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
