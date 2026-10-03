@@ -228,11 +228,10 @@
   // the stage is collapsed onto the viewport and its children re-pointed.
   //
   // Fixed and 100lvh, not absolute and 100%: .home stops at 100svh, the
-  // viewport with the browser toolbars showing, but iOS Safari's bottom bar is
-  // translucent, so the strip beneath it showed bare ground and a hard edge
-  // where the art was clipped. Fixed escapes .home's overflow without adding
-  // scroll height. Everything inside is still positioned in svh, so the
-  // composition is unchanged — the art simply carries on under the bar.
+  // viewport with the browser toolbars showing, but mobile Safari's bottom bar
+  // is translucent, so the strip beneath it showed bare ground. Fixed escapes
+  // .home's overflow without adding scroll height. Everything inside is still
+  // positioned in svh, so the composition is unchanged.
   .home__art {
     position: fixed;
     left: 0;
@@ -241,8 +240,11 @@
     height: 100vh;
     height: 100lvh;
     transform: none;
-    // The grain moves here from .home so it also runs under the toolbar.
-    background-image: var(--grain);
+    // iOS 26 Safari will not paint fixed content beneath its floating bottom
+    // toolbar, so on that browser the art still stops at the svh line. Fade it
+    // out over the last stretch so it ends softly there instead of on a cut.
+    -webkit-mask-image: linear-gradient(to bottom, #000 88svh, transparent 100svh);
+    mask-image: linear-gradient(to bottom, #000 88svh, transparent 100svh);
   }
 
   .home__band {
