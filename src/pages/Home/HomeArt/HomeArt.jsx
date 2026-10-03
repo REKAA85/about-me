@@ -1,6 +1,7 @@
-import { blueFlame, lightning3, lightning2, character, lightning1 } from './heroImages'
-import { usePointerParallax } from '../hooks/usePointerParallax'
-import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
+import { blueFlame, lightning3, lightning2, character, lightning1 } from '../heroImages'
+import { usePointerParallax } from '@/hooks/usePointerParallax'
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
+import './HomeArtStyle.scss'
 
 // Parallax is pointer-driven, so it is switched off entirely where there is
 // no fine pointer. That also keeps the rAF loop — and the compositing cost of

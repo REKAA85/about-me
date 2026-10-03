@@ -1,4 +1,4 @@
-import Home from './components/Home'
+import Home from '@/pages/Home/Home'
 
 export default function App() {
   // The Links / Services / Art Archive screens are the next pieces of the

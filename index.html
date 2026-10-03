@@ -7,6 +7,20 @@
     <meta name="description" content="REKAA_85 — Variety / FPS streamer and VTuber. Watch live on Twitch." />
     <link rel="icon" type="image/png" href="%BASE_URL%favicon.png" />
     <title>REKAA_85</title>
+    <script>
+      // The clock picks the theme, resolved before first paint so the intro
+      // never shows the wrong ground. Kept in sync with src/lib/timeOfDay.js:
+      // sunset (17-20) and night (20-05) are dark, sunrise and day are light.
+      (function () {
+        try {
+          var h = new Date().getHours();
+          var dark = h >= 17 || h < 5;
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        } catch (e) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

@@ -6,11 +6,26 @@
 // frame (node 1096:1019) — change them here to re-skin the site.
 // ---------------------------------------------------------------------------
 
-// Surface + ink
+// Surface + ink. These are the light values; the dark set below mirrors them,
+// and global.scss emits both as --c-* custom properties so a theme can be
+// switched at runtime. Use the custom properties, not these Sass variables,
+// anywhere a colour should follow the theme.
 $surface: #f1f1f1; // page background
 $ink: #17191b; // primary UI text (nav labels)
 $ink-strong: #000000; // display copy (tagline, masthead meta)
 $muted: #737577; // route markers / secondary labels
+
+// Dark mode — Figma "Home Page - Dark Mode" (node 1135:1159).
+// The frame sets route markers to pure white and nav labels to #f0f3f6, so the
+// secondary text is nominally brighter than the primary. Rendered it reads
+// correctly because the marker is 9px against a 20px label, so the hierarchy
+// comes from size; the frame's values are kept as drawn.
+// The Background layer's own fill. The frame behind it is #1d2023, but the
+// layer covers it, so this is what actually paints.
+$surface-dark: #1d2024;
+$ink-dark: #f0f3f6;
+$ink-strong-dark: #ffffff;
+$muted-dark: #ffffff;
 
 // Accent
 $accent: #e22f24; // corner marks, status dots, arrows
@@ -33,6 +48,11 @@ $brand-x: #000000;
 $brand-kofi: #ff5e5b;
 // Unverified — Throne publishes no public brand value I could confirm.
 $brand-throne: #141428;
+
+// X and Throne are near-black, which disappears on the dark surface. Both are
+// inverted there; the rest read fine against either ground.
+$brand-x-dark: #ffffff;
+$brand-throne-dark: #d8d8e4;
 
 // The artboard every Home Page measurement is expressed against.
 $frame-w: 1920;

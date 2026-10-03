@@ -1,0 +1,67 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+// Sass requires every @use at the top. Emitting the reset before the token
+// block below is harmless: var() resolves against an element's cascaded
+// custom-property value, not source order.
+@use 'reset';
+
+// ---------------------------------------------------------------------------
+// Theme tokens.
+//
+// Every colour that follows the theme is published here as a --c-* custom
+// property; stylesheets read those rather than the Sass variables, so a theme
+// change is a single attribute flip on <html> with no recompile.
+//
+// index.html sets data-theme before first paint, so the boot screen never
+// shows the wrong ground. The prefers-color-scheme block below is the
+// no-JavaScript fallback for when that attribute is never written.
+// ---------------------------------------------------------------------------
+:root {
+  --c-surface: #{$surface};
+  --c-ink: #{$ink};
+  --c-ink-strong: #{$ink-strong};
+  --c-muted: #{$muted};
+  --c-line: #{rgba($ink-strong, 0.08)};
+
+  --c-brand-twitch: #{$brand-twitch};
+  --c-brand-youtube: #{$brand-youtube};
+  --c-brand-discord: #{$brand-discord};
+  --c-brand-x: #{$brand-x};
+  --c-brand-kofi: #{$brand-kofi};
+  --c-brand-throne: #{$brand-throne};
+
+  // Page grain. Figma puts a feTurbulence overlay on the Background layer of
+  // both frames — its codegen never exports filters, so it only surfaces if
+  // you read the layer's own SVG. It is identical in both themes: black at 2%
+  // through a discrete alpha table that keeps ~26% of the range. That is why
+  // it reads clearly on the light ground (241 -> 236) and is nearly
+  // subliminal on the dark one (29 -> 28).
+  //
+  // Reproduced as a repeating 200px tile rather than a filter on the element:
+  // filtering a full-viewport element would push the whole subtree through an
+  // offscreen buffer, and the artwork animates over it every frame.
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g' x='0' y='0' width='100%' height='100%'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.19455254 0.15822785' numOctaves='3' seed='5034' stitchTiles='stitch' result='n'/%3E%3CfeColorMatrix in='n' type='luminanceToAlpha' result='a'/%3E%3CfeComponentTransfer in='a' result='m'%3E%3CfeFuncA type='discrete' tableValues='0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0'/%3E%3C/feComponentTransfer%3E%3CfeFlood flood-color='black' flood-opacity='0.02' result='f'/%3E%3CfeComposite operator='in' in='f' in2='m'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url%28%23g%29'/%3E%3C/svg%3E");
+}
+
+@mixin dark-tokens {
+  --c-surface: #{$surface-dark};
+  --c-ink: #{$ink-dark};
+  --c-ink-strong: #{$ink-strong-dark};
+  --c-muted: #{$muted-dark};
+  --c-line: #{rgba(#fff, 0.14)};
+
+  --c-brand-x: #{$brand-x-dark};
+  --c-brand-throne: #{$brand-throne-dark};
+
+}
+
+:root[data-theme='dark'] {
+  @include dark-tokens;
+}
+
+// Only applies when nothing has set data-theme — i.e. scripting is off.
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    @include dark-tokens;
+  }
+}

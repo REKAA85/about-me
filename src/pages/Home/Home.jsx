@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
-import HomeArt from "./HomeArt";
-import { ArrowDownRight, ArrowRight } from "./icons/ArrowIcons";
-import { BrandIcon } from "./icons/BrandIcons";
-import { BOOT_IMAGES, wordmark } from "./heroImages";
-import { useBootSequence } from "../hooks/useBootSequence";
+import HomeArt from "./HomeArt/HomeArt";
+import { ArrowDownRight, ArrowRight } from "@/components/icons/ArrowIcons";
+import { BrandIcon } from "@/components/icons/BrandIcons";
+import { BOOT_IMAGES, WORDMARK } from "./heroImages";
+import { useBootSequence } from "@/hooks/useBootSequence";
+import { useTheme } from "@/hooks/useTheme";
+import { TimeIcon, bandLabel } from "@/components/icons/TimeIcons";
+import { timeBand, formatClock } from "@/lib/timeOfDay";
+import "./HomeStyle.scss";
 
-// Keep in sync with $boot-travel in _home.scss — how long the corner accents
+// Keep in sync with $boot-travel in styles/_variables.scss — how long the corner accents
 // take to reach their corners.
 const TRAVEL_MS = 820;
 
@@ -50,7 +54,15 @@ const SECTIONS = [
 
 export default function Home({ onNavigate }) {
   const phase = useBootSequence(BOOT_IMAGES, TRAVEL_MS);
-  const booting = phase === "loading";
+  const { theme, toggle: toggleTheme } = useTheme();
+  // Frozen at mount so the clock shown in the intro cannot tick mid-sequence.
+  const [now] = useState(() => new Date());
+  const band = timeBand(now);
+  // The page proper mounts with the split, not before it.
+  const booting = phase !== "opening" && phase !== "ready";
+  // The icon arrives with the time stage and stays on as the toggle's face.
+  const showIcon = phase !== "loading" && phase !== "welcome";
+  const clock = formatClock(now);
   const [openId, setOpenId] = useState(null);
   const open = SECTIONS.find((s) => s.id === openId) ?? null;
 
@@ -78,20 +90,53 @@ export default function Home({ onNavigate }) {
     <main className={`home is-${phase}${open ? " is-expanded" : ""}`}>
       {!booting && <HomeArt />}
 
-      {/* These two are the loading chip and the corner marks both. During
-          'loading' they sit merged at the centre; the sequence just lets them
-          travel to the corners they already belong to. */}
-      <span className="home__corner home__corner--tl" aria-hidden="true" />
+      {/* These two are the intro chip and the corner marks both. Through
+          'loading' / 'welcome' / 'time' they sit merged at the centre as one
+          chip — --tl is its right-hand icon square, --br its body — and the
+          split simply lets each fly to the corner it becomes. Nothing is
+          swapped or re-mounted, so there is no seam.
+
+          --tl is also the theme switch, and keeps the time-of-day icon as its
+          face. It stays disabled until the sequence ends, so it is neither
+          focusable nor clickable while still in flight. */}
+      <button
+        type="button"
+        className="home__corner home__corner--tl"
+        onClick={toggleTheme}
+        disabled={phase !== "ready"}
+        aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+        title={`${bandLabel(band)} — ${clock}`}
+      >
+        {showIcon && <TimeIcon band={band} className="home__corner-icon" />}
+      </button>
       <span className="home__corner home__corner--br" aria-hidden="true" />
 
       {phase === "opening" && (
         <span className="home__discharge" aria-hidden="true" />
       )}
 
-      {phase !== "ready" && (
-        <p className="home__boot" role="status">
-          Loading
-          <span className="home__boot-caret" aria-hidden="true" />
+      {/* All three lines are mounted at once and crossfaded by the stage
+          class, which is what lets one word hand over to the next instead of
+          cutting. Inactive lines go visibility:hidden once faded, so they
+          leave the accessibility tree too. */}
+      {booting && (
+        <p className="home__boot" aria-live="polite">
+          <span className="home__boot-line" data-stage="loading">
+            Loading
+            {/* Each dot keeps its space and only its opacity cycles, so the
+                line stays the 118px the frame draws and nothing reflows. */}
+            <span className="home__boot-dots" aria-hidden="true">
+              <span>.</span>
+              <span>.</span>
+              <span>.</span>
+            </span>
+          </span>
+          <span className="home__boot-line" data-stage="welcome">
+            Welcome.
+          </span>
+          <span className="home__boot-line" data-stage="time">
+            {`It\u2019s ${clock}`}
+          </span>
         </p>
       )}
 
@@ -105,7 +150,7 @@ export default function Home({ onNavigate }) {
             <h1 className="home__title">
               <img
                 className="home__wordmark"
-                src={wordmark}
+                src={WORDMARK[theme]}
                 alt="REKAA_85"
                 width="1600"
                 height="314"
@@ -132,7 +177,7 @@ export default function Home({ onNavigate }) {
                       "--i": i,
                       // Character counts let CSS derive each string's width, which
                       // is what makes the slide to right-aligned animatable. Safe
-                      // because the face is monospace — see _home.scss.
+                      // because the face is monospace — see HomeStyle.scss.
                       "--marker-len": section.marker.length,
                       "--label-len": section.label.length,
                     }}

@@ -1,3 +1,4 @@
+import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { imagetools } from 'vite-imagetools'
@@ -11,4 +12,11 @@ import { imagetools } from 'vite-imagetools'
 export default defineConfig({
   base: '/about-me/',
   plugins: [react(), imagetools()],
+  resolve: {
+    // '@' is the src root, so a page three folders deep still imports shared
+    // code as '@/hooks/...' rather than '../../../hooks/...'.
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
 })
