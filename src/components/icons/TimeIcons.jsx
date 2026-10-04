@@ -2,7 +2,7 @@
 // in 1139:1707). Each is one stroked path on a 24x24 box; inlined like the
 // other icon sets so they inherit colour, with the hard-coded white swapped
 // for currentColor.
-const PATHS = {
+export const TIME_ICON_PATHS = {
   sunrise:
     'M17 18C17 16.6739 16.4732 15.4021 15.5355 14.4645C14.5979 13.5268 13.3261 13 12 13C10.6739 13 9.40215 13.5268 8.46447 14.4645C7.52678 15.4021 7 16.6739 7 18M12 2V9M16 6L12 2L8 6M4.22 10.22L5.64 11.64M1 18H3M21 18H23M18.36 11.64L19.78 10.22M23 22H1',
   day: 'M12 1V3M12 21V23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z',
@@ -20,7 +20,7 @@ const LABELS = {
 }
 
 export function TimeIcon({ band, className }) {
-  const d = PATHS[band]
+  const d = TIME_ICON_PATHS[band]
   if (!d) return null
 
   return (
