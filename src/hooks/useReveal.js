@@ -37,7 +37,24 @@ export function useReveal() {
       { rootMargin: '0px 0px -6% 0px' },
     )
     targets.forEach((el) => observer.observe(el))
-    return () => observer.disconnect()
+
+    // Elements mounted later (a filter brings cards back) are new nodes, so
+    // they need observing too or they would stay hidden.
+    const mutations = new MutationObserver((records) => {
+      for (const record of records) {
+        for (const node of record.addedNodes) {
+          if (!(node instanceof Element)) continue
+          if (node.matches('[data-reveal]')) observer.observe(node)
+          node.querySelectorAll('[data-reveal]').forEach((el) => observer.observe(el))
+        }
+      }
+    })
+    mutations.observe(ref.current, { childList: true, subtree: true })
+
+    return () => {
+      observer.disconnect()
+      mutations.disconnect()
+    }
   }, [])
 
   return ref

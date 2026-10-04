@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { ArrowDownRight, ArrowRight } from "@/components/icons/ArrowIcons";
 import { AlertTriangle } from "@/components/icons/AlertIcons";
 import { TimeIcon } from "@/components/icons/TimeIcons";
+import { SearchIcon } from "@/components/icons/SearchIcons";
 import { useTheme } from "@/hooks/useTheme";
 import { useReveal } from "@/hooks/useReveal";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
@@ -21,7 +22,23 @@ import "./ArtArchiveStyle.scss";
 export default function ArtArchive({ onBack }) {
   const { theme, toggle: toggleTheme } = useTheme();
   const [open, setOpen] = useState(null);
+  const [query, setQuery] = useState("");
+  const [showNsfw, setShowNsfw] = useState(true);
   const contentRef = useReveal();
+
+  // The search matches a piece's title or artist; hiding NSFW drops those
+  // pieces outright. A section left with nothing in it is dropped too.
+  const needle = query.trim().toLowerCase();
+  const sections = SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter(
+      (art) =>
+        (showNsfw || !art.nsfw) &&
+        (!needle ||
+          art.title.toLowerCase().includes(needle) ||
+          art.artist.toLowerCase().includes(needle)),
+    ),
+  })).filter((section) => section.items.length > 0);
 
   return (
     <main className="archive">
@@ -47,8 +64,32 @@ export default function ArtArchive({ onBack }) {
           <ArrowDownRight className="archive__title-arrow" />
           <span>- Art Archive</span>
         </h1>
+        
+        <div className="search__bar" data-reveal>
+          <button
+            type="button"
+            className={`search__toggle${showNsfw ? " is-on" : ""}`}
+            onClick={() => setShowNsfw((on) => !on)}
+            aria-pressed={showNsfw}
+          >
+            {showNsfw ? "SHOW NSFW" : "HIDE NSFW"}
+          </button>
+          <label className="search__field">
+            <input
+              type="search"
+              className="search__input"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search for artist or art_"
+              aria-label="Search for artist or art"
+            />
+            <span className="search__mark" aria-hidden="true">
+              <SearchIcon className="search__icon" />
+            </span>
+          </label>
+        </div>
 
-        {SECTIONS.map((section, i) => (
+        {sections.map((section, i) => (
           <section key={section.id} className="archive__section" aria-labelledby={`archive-${section.id}`}>
             {i > 0 && <hr className="archive__rule" data-reveal />}
             <h2 id={`archive-${section.id}`} className="archive__tag" data-reveal>
