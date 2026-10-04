@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 // Shortest the Loading chip is ever on screen, so a warm cache does not flash
 // it. The later stages are read, not waited on, so they get fixed holds.
 const MIN_LOADING_MS = 650
-const WELCOME_MS = 1150
 const TIME_MS = 1700
 // The chip folding down into a single square before the two halves diverge.
 const COLLAPSE_MS = 560
@@ -28,9 +27,11 @@ function preload(src) {
 // reads as one — and 'opening' is where they diverge to their corners.
 // 'ready' just marks the end.
 //
+// welcomeMs is how long the greeting holds; it varies with the line picked.
+//
 // With skip set the sequence starts at 'ready' — used when the visitor comes
 // back to home from another page and has already sat through it once.
-export function useBootSequence(sources, travelMs, skip = false) {
+export function useBootSequence(sources, travelMs, skip = false, welcomeMs = 1150) {
   const [phase, setPhase] = useState(skip ? 'ready' : 'loading')
 
   useEffect(() => {
@@ -58,7 +59,7 @@ export function useBootSequence(sources, travelMs, skip = false) {
 
   useEffect(() => {
     const next = {
-      welcome: ['time', WELCOME_MS],
+      welcome: ['time', welcomeMs],
       time: ['collapse', TIME_MS],
       collapse: ['opening', COLLAPSE_MS],
       opening: ['ready', travelMs],
@@ -66,7 +67,7 @@ export function useBootSequence(sources, travelMs, skip = false) {
     if (!next) return undefined
     const id = setTimeout(() => setPhase(next[0]), next[1])
     return () => clearTimeout(id)
-  }, [phase, travelMs])
+  }, [phase, travelMs, welcomeMs])
 
   return phase
 }

@@ -4,52 +4,58 @@
 @use '../../styles/frame' as *;
 
 // ---------------------------------------------------------------------------
-// Art Archive — placeholder.
+// Art Archive — Figma node 1148:139.
 //
 // Measured with the same cu() unit as Home so the corner marks land on
 // exactly the same squares, which is what lets them hold still while the
-// page wipes across underneath.
+// page wipes across underneath. Every other number is a literal design pixel
+// off the 1920-wide frame, with a rem floor on the type so it stays legible
+// once --cu bottoms out on a phone.
 // ---------------------------------------------------------------------------
 
 .archive {
   --cu: clamp(0.58px, #{math.div(100, $frame-w)}vw, 1.4px);
   --corner: #{cu(56)};
   --icon: #{cu(24)};
+  // Every card in a row is held to this height; width follows the piece.
+  --row: #{cu(302)};
+  --gutter: #{cu(154)};
 
   position: relative;
   min-height: 100svh;
-  display: grid;
-  place-items: center;
-  padding: calc(var(--corner) + #{$space-8}) $space-6;
   background-color: var(--c-surface);
   background-image: var(--grain);
-  color: var(--c-ink);
+  color: var(--c-ink-strong);
 }
 
+// Fixed rather than absolute: the archive scrolls, and the corners are the
+// page's furniture, not its content.
 .archive__corner {
-  position: absolute;
+  position: fixed;
+  z-index: 3;
   width: var(--corner);
   height: var(--corner);
+  display: grid;
+  place-items: center;
+  padding: 0;
   background: $accent;
   border: 0;
+  color: #fff;
+  cursor: pointer;
+
+  &:hover {
+    filter: brightness(1.18);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--c-ink);
+    outline-offset: 3px;
+  }
 
   &--tl {
     left: 0;
     top: 0;
-    display: grid;
-    place-items: center;
-    color: #fff;
-    cursor: pointer;
     view-transition-name: corner-tl;
-
-    &:hover {
-      filter: brightness(1.18);
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--c-ink);
-      outline-offset: 3px;
-    }
   }
 
   &--br {
@@ -59,47 +65,412 @@
   }
 }
 
-.archive__back-icon {
+.archive__corner-icon {
   width: var(--icon);
   height: var(--icon);
-  transform: rotate(180deg);
+
+  &--back {
+    transform: rotate(180deg);
+  }
 }
 
 .archive__content {
-  display: grid;
-  justify-items: center;
-  gap: $space-3;
-  text-align: center;
+  padding: cu(107) var(--gutter) cu(140);
 }
 
-.archive__marker {
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  color: var(--c-muted);
-}
-
+// "↘ - Art Archive". The arrow's 48px slot starts 12px left of the gutter,
+// and the copy 52.7px after it.
 .archive__title {
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
-  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: cu(52.7);
+  margin-left: cu(-12);
+  font-size: max(#{cu(51.59)}, 1.75rem);
+  font-weight: 300;
+  line-height: normal;
   color: var(--c-ink-strong);
 }
 
-.archive__wip {
-  margin-top: $space-4;
-  font-size: clamp(4rem, 16vw, 10rem);
-  font-weight: 100;
-  line-height: 1;
-  letter-spacing: 0.08em;
+.archive__title-arrow {
+  flex: none;
+  width: max(#{cu(48)}, 1.75rem);
+  height: max(#{cu(48)}, 1.75rem);
   color: $accent;
+}
+
+.archive__section {
+  margin-top: cu(43);
+}
+
+.archive__rule {
+  height: 1px;
+  margin: 0 cu(-41) cu(41);
+  border: 0;
+  background: var(--c-ink-strong);
+  opacity: 0.55;
+}
+
+.archive__tag {
+  display: inline-flex;
+  align-items: center;
+  height: max(#{cu(38)}, 1.75rem);
+  padding-inline: max(#{cu(36)}, 0.875rem);
+  background: $accent;
+  color: #fff;
+  font-size: max(#{cu(16.8)}, 0.8125rem);
+  font-weight: 400;
+  line-height: normal;
 }
 
 .archive__cursor {
   animation: archive-blink 1.1s steps(1) infinite;
 }
 
-.archive__note {
-  font-size: 0.875rem;
-  color: var(--c-muted);
+.archive__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: cu(40) cu(26);
+  margin-top: cu(22);
+}
+
+// ---------------------------------------------------------------------------
+// Card
+// ---------------------------------------------------------------------------
+.art {
+  // --ar is the piece's "width / height", written inline per card. The width
+  // sits on the list item itself: a percentage inside a shrink-wrapped flex
+  // item would have nothing to resolve against.
+  width: min(calc(var(--row) * var(--ar)), 100%);
+}
+
+.art__figure {
+  margin: 0;
+}
+
+.art__frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: var(--ar);
+  padding: 0;
+  overflow: hidden;
+  background: var(--c-line);
+  cursor: zoom-in;
+
+  @include focus-ring;
+
+  &.is-covered {
+    cursor: pointer;
+    // The blur's edges stay soft, as drawn, rather than being clipped square.
+    overflow: visible;
+  }
+}
+
+.art__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform $duration-slow $ease-out;
+
+  .art__frame:not(.is-covered):hover & {
+    transform: scale(1.03);
+  }
+
+  .is-covered & {
+    filter: blur(10.1px) brightness(0.42);
+  }
+}
+
+// "NSFW Content" over the blurred piece.
+.art__cover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: cu(10);
+  color: #fff;
+  font-size: max(#{cu(16.8)}, 0.8125rem);
+  transition: transform $duration-med $ease-out;
+
+  .art__frame:hover & {
+    transform: scale(1.06);
+  }
+}
+
+.art__cover-icon {
+  width: max(#{cu(39)}, 1.5rem);
+  height: max(#{cu(39)}, 1.5rem);
+}
+
+.art__caption {
+  display: grid;
+}
+
+.art__title {
+  font-size: max(#{cu(16.8)}, 0.8125rem);
+  line-height: normal;
+  color: var(--c-ink-strong);
+}
+
+.art__artist {
+  font-family: $font-grotesk;
+  font-size: max(#{cu(10)}, 0.625rem);
+  font-weight: 200;
+  line-height: normal;
+  color: var(--c-ink-strong);
+}
+
+// ---------------------------------------------------------------------------
+// Lightbox
+// ---------------------------------------------------------------------------
+html:has(.lightbox[open]) {
+  overflow: hidden;
+}
+
+.lightbox {
+  --cu: clamp(0.58px, #{math.div(100, $frame-w)}vw, 1.4px);
+
+  width: 100vw;
+  max-width: none;
+  height: 100svh;
+  max-height: none;
+  margin: 0;
+  padding: $space-12 $space-6;
+  border: 0;
+  background: transparent;
+  display: none;
+  place-items: center;
+
+  &[open] {
+    display: grid;
+  }
+
+  &::backdrop {
+    background: rgba(#000, 0.86);
+    animation: lightbox-fade 400ms $ease-out backwards;
+  }
+
+  &.is-closing::backdrop {
+    animation: lightbox-fade 380ms ease-in reverse forwards;
+  }
+}
+
+.lightbox__figure {
+  display: grid;
+  justify-items: center;
+  gap: $space-2;
+  margin: 0;
+}
+
+// Laid out at its final size up front — width from whichever runs out first
+// of the viewport's width and height, height from the aspect ratio — so the
+// morph has a box to measure before the full-size image has loaded. The
+// transform origin is the corner the FLIP maths measures from.
+.lightbox__piece {
+  width: min(calc(100vw - #{$space-6 * 2}), 1600px, calc((100svh - 8rem) * var(--ar)));
+  aspect-ratio: var(--ar);
+  transform-origin: 0 0;
+}
+
+.lightbox__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  // The cached thumb, painted under the full image until it arrives.
+  background-position: center;
+  background-size: cover;
+}
+
+// NSFW reveal. Both copies share one grid cell, so the stage is exactly the
+// image's size; overflow is clipped so the blur's soft edges stay inside it.
+.lightbox__stage {
+  display: grid;
+  height: 100%;
+  overflow: hidden;
+
+  > * {
+    grid-area: 1 / 1;
+  }
+}
+
+.lightbox__img--blurred {
+  // Scaled up a touch so the blur never pulls transparent edges into view.
+  transform: scale(1.08);
+  filter: blur(32px) brightness(0.42);
+}
+
+.lightbox__img--sharp {
+  clip-path: polygon(-50% 0, 0% 0, -30% 100%, -50% 100%);
+
+  .is-revealed & {
+    animation: lightbox-reveal 900ms $ease-out forwards;
+  }
+}
+
+.lightbox__cover {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $space-3;
+  padding: 0;
+  color: #fff;
+  font-size: max(#{cu(16.8)}, 0.875rem);
+  cursor: pointer;
+  transition:
+    opacity 360ms $ease-out,
+    transform 360ms $ease-out,
+    visibility 0s linear 360ms;
+
+  &:focus-visible {
+    outline: 2px solid $accent;
+    outline-offset: -4px;
+  }
+
+  .is-revealed & {
+    opacity: 0;
+    transform: scale(1.12);
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+.lightbox__cover-icon {
+  width: max(#{cu(39)}, 1.75rem);
+  height: max(#{cu(39)}, 1.75rem);
+  transition: transform $duration-med $ease-out;
+
+  .lightbox__cover:hover & {
+    transform: translateY(-2px) scale(1.08);
+  }
+}
+
+.lightbox__hint {
+  font-family: $font-grotesk;
+  font-size: max(#{cu(10)}, 0.6875rem);
+  font-weight: 200;
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+  animation: lightbox-hint 1.6s ease-in-out infinite;
+}
+
+// The caption and close button follow the piece in, and leave first.
+.lightbox__caption,
+.lightbox__close {
+  animation: lightbox-fade 400ms 200ms $ease-out backwards;
+  transition: opacity 150ms ease-in;
+
+  .is-closing & {
+    opacity: 0;
+  }
+}
+
+.lightbox__caption {
+  display: grid;
+  justify-items: center;
+
+  .art__title,
+  .art__artist {
+    color: #fff;
+  }
+}
+
+.lightbox__close {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: var(--corner, #{cu(56)});
+  height: var(--corner, #{cu(56)});
+  display: grid;
+  place-items: center;
+  background: $accent;
+  color: #fff;
+
+  &:hover {
+    filter: brightness(1.18);
+  }
+
+  @include focus-ring;
+}
+
+// ---------------------------------------------------------------------------
+// Build-in. useReveal adds .is-in to each [data-reveal] element as it first
+// comes into view, with its place in the stagger as --reveal-delay. Every
+// animation fills backwards only: the end state is the element's natural
+// one, so nothing is pinned once it has played and hover still works.
+// ---------------------------------------------------------------------------
+html:has(.archive) {
+  // The lightbox locks scrolling; reserving the gutter stops the grid
+  // shifting sideways under it when the scrollbar goes.
+  scrollbar-gutter: stable;
+}
+
+[data-reveal]:not(.is-in) {
+  opacity: 0;
+}
+
+.archive__title.is-in {
+  .archive__title-arrow {
+    animation: reveal-arrow 700ms var(--reveal-delay) $ease-out backwards;
+  }
+
+  span {
+    animation: reveal-wipe 800ms calc(var(--reveal-delay) + 120ms) $ease-out backwards;
+  }
+}
+
+.archive__tag.is-in {
+  animation: reveal-wipe 560ms var(--reveal-delay) $ease-out backwards;
+}
+
+.archive__rule.is-in {
+  transform-origin: left center;
+  animation: reveal-rule 1000ms var(--reveal-delay) $ease-out backwards;
+}
+
+.art.is-in {
+  animation: reveal-rise 700ms var(--reveal-delay) $ease-out backwards;
+
+  .art__img {
+    animation: reveal-settle 1100ms var(--reveal-delay) $ease-out backwards;
+  }
+}
+
+@keyframes reveal-arrow {
+  from {
+    opacity: 0;
+    transform: translate(-40%, -40%);
+  }
+}
+
+// Left to right, the way the page wipe travels.
+@keyframes reveal-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+@keyframes reveal-rule {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(#{cu(28)});
+  }
+}
+
+@keyframes reveal-settle {
+  from {
+    transform: scale(1.12);
+  }
 }
 
 @keyframes archive-blink {
@@ -108,15 +479,73 @@
   }
 }
 
-// Portrait corner size matches Home's.
+// The page transitions' -45deg wipe (global.scss), sweeping the sharp copy
+// in over the blurred one.
+@keyframes lightbox-reveal {
+  to {
+    clip-path: polygon(-50% 0, 130% 0, 100% 100%, -50% 100%);
+  }
+}
+
+@keyframes lightbox-hint {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes lightbox-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+// Portrait corner size matches Home's; the 154px gutter is far too much on a
+// phone, so the content drops to a fixed one clear of the corner.
 @media (max-width: $bp-md), (max-aspect-ratio: 1 / 1) {
-  .archive {
+  .archive,
+  .lightbox {
     --corner: clamp(2.1rem, 5.6vw, 3.15rem);
+  }
+
+  .archive {
+    --gutter: #{$space-6};
+  }
+
+  .archive__content {
+    padding-top: calc(var(--corner) + #{$space-6});
+  }
+
+  .archive__title {
+    margin-left: 0;
+    gap: $space-3;
   }
 }
 
 @include reduced-motion {
-  .archive__cursor {
+  .archive__cursor,
+  .lightbox__hint,
+  .lightbox::backdrop,
+  .lightbox__caption,
+  .lightbox__close,
+  .is-in,
+  .is-in * {
+    animation: none !important;
+  }
+
+  [data-reveal]:not(.is-in) {
+    opacity: 1;
+  }
+
+  .art__img,
+  .art__cover,
+  .lightbox__cover,
+  .lightbox__cover-icon {
+    transition: none;
+  }
+
+  // No sweep: the piece is simply there once revealed.
+  .is-revealed .lightbox__img--sharp {
     animation: none;
+    clip-path: none;
   }
 }

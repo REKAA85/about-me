@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import HomeArt from "./HomeArt/HomeArt";
 import { ArrowDownRight, ArrowRight } from "@/components/icons/ArrowIcons";
 import { NavIcon } from "@/components/icons/NavIcons";
@@ -8,6 +8,7 @@ import { useBootSequence } from "@/hooks/useBootSequence";
 import { useTheme } from "@/hooks/useTheme";
 import { TimeIcon, bandLabel } from "@/components/icons/TimeIcons";
 import { timeBand, formatClock } from "@/lib/timeOfDay";
+import { pickGreeting } from "@/lib/greeting";
 import "./HomeStyle.scss";
 
 // Keep in sync with $boot-travel in styles/_variables.scss — how long the corner accents
@@ -61,10 +62,14 @@ const SECTIONS = [
 
 export default function Home({ onNavigate }) {
   const [skipIntro] = useState(() => introPlayed);
-  const phase = useBootSequence(BOOT_IMAGES, TRAVEL_MS, skipIntro);
-  const { theme, toggle: toggleTheme } = useTheme();
   // Frozen at mount so the clock shown in the intro cannot tick mid-sequence.
   const [now] = useState(() => new Date());
+  // Picked once per mount from config/greetings.js; longer lines hold longer.
+  const [greeting] = useState(() => pickGreeting(now));
+  const phase = useBootSequence(BOOT_IMAGES, TRAVEL_MS, skipIntro, greeting.holdMs);
+  const { theme, toggle: toggleTheme } = useTheme();
+  const greetingRef = useRef(null);
+  const [greetingSize, setGreetingSize] = useState(null);
   const band = timeBand(now);
   // The page proper mounts with the split, not before it.
   const booting = phase !== "opening" && phase !== "ready";
@@ -81,6 +86,16 @@ export default function Home({ onNavigate }) {
 
   useEffect(() => {
     if (phase === "ready") introPlayed = true;
+  }, [phase]);
+
+  // The chip is drawn for "Welcome.", so it grows to fit whatever line was
+  // picked. Measured as the welcome stage starts — the boot sequence has
+  // waited on the fonts by then — and before paint, so it never shows the
+  // wrong size first.
+  useLayoutEffect(() => {
+    if (phase !== "welcome" || !greetingRef.current) return;
+    const { offsetWidth, offsetHeight } = greetingRef.current;
+    setGreetingSize({ "--greeting-w": `${offsetWidth}px`, "--greeting-h": `${offsetHeight}px` });
   }, [phase]);
 
   useEffect(() => {
@@ -102,7 +117,7 @@ export default function Home({ onNavigate }) {
   }
 
   return (
-    <main className={`home is-${phase}${open ? " is-expanded" : ""}`}>
+    <main className={`home is-${phase}${open ? " is-expanded" : ""}`} style={greetingSize ?? undefined}>
       {!booting && <HomeArt />}
 
       {/* These two are the intro chip and the corner marks both. Through
@@ -148,8 +163,8 @@ export default function Home({ onNavigate }) {
               <span>.</span>
             </span>
           </span>
-          <span className="home__boot-line" data-stage="welcome">
-            Welcome.
+          <span className="home__boot-line" data-stage="welcome" ref={greetingRef}>
+            {greeting.text}
           </span>
           <span className="home__boot-line" data-stage="time">
             {`It\u2019s ${clock}`}

@@ -130,6 +130,16 @@
   --chip-label-x: #{cu(-27.8)};
 }
 
+// The greeting is picked at random (config/greetings.js), so the chip sizes
+// itself around the measured line — never narrower than the frame's 176.4,
+// and padded by a chip-height's worth so short lines keep the drawn margins.
+// Home.jsx writes --greeting-w/-h; until then they fall back to nothing.
+.home.is-welcome {
+  --chip-body-w: max(#{cu(176.4)}, var(--greeting-w, 0px) + #{cu(56)});
+  --chip-body-x: calc(var(--chip-body-w) / -2);
+  --chip-h: max(#{cu(56)}, var(--greeting-h, 0px) + #{cu(28)});
+}
+
 // Both halves land on exactly the same square, so the chip reads as having
 // folded into one mark before it splits.
 .home.is-collapse {
@@ -292,35 +302,75 @@ button.home__corner {
   transition: left $duration-med $ease-out;
 }
 
-// All three words occupy the same spot and crossfade, so one hands over to
-// the next instead of cutting. The incoming word rises as the outgoing one
-// sinks, which reads as a ticker rather than a swap.
+// All three lines occupy the same spot and run as a ticker: each waits below
+// its slot, rises in, and leaves upwards. The two never share the chip — the
+// outgoing line is gone in $boot-line-out before the incoming one starts —
+// which is what keeps a long greeting from lingering over its replacement.
+//
+// The chip's own resize is held back by the same $boot-line-out (below), so
+// it never narrows under a line that is still on its way out.
 //
 // visibility is transitioned with a delay rather than left alone: it drops
-// the inactive words out of the accessibility tree, but only once they have
-// finished fading.
+// the inactive lines out of the accessibility tree, but only once they have
+// finished leaving.
+$boot-line-out: 150ms;
+$boot-line-in: 380ms;
+
 .home__boot-line {
   position: absolute;
   left: 0;
   top: 0;
   display: flex;
   align-items: center;
-  transform: translate(-50%, calc(-50% + 0.42em));
+  transform: translate(-50%, calc(-50% + 0.5em));
   opacity: 0;
   visibility: hidden;
   transition:
-    opacity $duration-med ease,
-    transform $duration-med $ease-out,
-    visibility 0s linear $duration-med;
+    opacity $boot-line-out ease-in,
+    transform $boot-line-out ease-in,
+    visibility 0s linear $boot-line-out;
 }
 
+// A long greeting wraps rather than running off a narrow screen. max-content
+// is needed because the line is absolutely positioned inside a zero-width
+// box, so an auto width would shrink to the longest word.
+.home__boot-line[data-stage='welcome'] {
+  width: max-content;
+  max-width: min(calc(100vw - #{$space-6 * 2} - #{cu(56)}), #{cu(760)});
+  justify-content: center;
+  line-height: 1.3;
+  text-align: center;
+  white-space: normal;
+}
+
+// Lines already shown leave upwards, so the ticker keeps one direction.
+.home.is-welcome [data-stage='loading'],
+.home.is-time [data-stage='loading'],
+.home.is-time [data-stage='welcome'],
+.home.is-collapse .home__boot-line {
+  transform: translate(-50%, calc(-50% - 0.5em));
+}
+
+// The current line rises in once the previous one has cleared.
 .home.is-loading [data-stage='loading'],
 .home.is-welcome [data-stage='welcome'],
 .home.is-time [data-stage='time'] {
   transform: translate(-50%, -50%);
   opacity: 1;
   visibility: visible;
-  transition-delay: 0s, 0s, 0s;
+  transition:
+    opacity ($boot-line-in * 0.6) ease-out $boot-line-out,
+    transform $boot-line-in $ease-out $boot-line-out,
+    visibility 0s linear 0s;
+}
+
+// Hold the chip's resize (and the label's re-centring) until the outgoing
+// line has left. Growing needs no hold — a line cannot overflow a chip that
+// is getting bigger — so only the shrinking stages wait.
+.home.is-time .home__corner,
+.home.is-collapse .home__corner,
+.home.is-time .home__boot {
+  transition-delay: $boot-line-out;
 }
 
 // The ellipsis cycles rather than blinking as a unit: each dot holds its
@@ -837,7 +887,11 @@ button.home__corner {
   // travel; the chip then cuts straight to its parked state at each stage.
   .home__corner,
   .home.is-opening .home__corner,
-  .home__boot {
+  .home__boot,
+  .home__boot-line,
+  .home.is-loading [data-stage='loading'],
+  .home.is-welcome [data-stage='welcome'],
+  .home.is-time [data-stage='time'] {
     transition: none;
   }
 }
