@@ -1,5 +1,6 @@
 import Home from '@/pages/Home/Home'
 import ArtArchive from '@/pages/ArtArchive/ArtArchive'
+import Commissions from '@/pages/Commissions/Commissions'
 import { useHashRoute } from '@/hooks/useHashRoute'
 
 export default function App() {
@@ -8,7 +9,7 @@ export default function App() {
   // The Links / Services screens are still to come; until a section has a
   // page of its own, selecting it just logs in development.
   function handleNavigate(section) {
-    if (section === 'art-archive') {
+    if (section === 'art-archive' || section === 'commissions') {
       navigate(section)
       return
     }
@@ -19,6 +20,10 @@ export default function App() {
 
   if (route === 'art-archive') {
     return <ArtArchive onBack={() => navigate('')} />
+  }
+
+  if (route === 'commissions') {
+    return <Commissions onBack={() => navigate('')} />
   }
 
   return <Home onNavigate={handleNavigate} />

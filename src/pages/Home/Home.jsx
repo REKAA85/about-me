@@ -3,6 +3,7 @@ import HomeArt from "./HomeArt/HomeArt";
 import { ArrowDownRight, ArrowRight } from "@/components/icons/ArrowIcons";
 import { NavIcon } from "@/components/icons/NavIcons";
 import { BrandIcon } from "@/components/icons/BrandIcons";
+import { BoxIcon } from "@/components/icons/BoxIcons";
 import { BOOT_IMAGES, WORDMARK } from "./heroImages";
 import { useBootSequence } from "@/hooks/useBootSequence";
 import { useTheme } from "@/hooks/useTheme";
@@ -25,6 +26,8 @@ let introPlayed = false;
 //
 // Figma does not draw rails for Services, so its two entries come from the
 // support links the previous site shipped — placeholder hrefs included.
+// Commissions leads them: a page on this site rather than a brand, so it
+// carries its own glyph (the Commissions page's box) and opens in place.
 const SECTIONS = [
   {
     id: "links",
@@ -53,6 +56,7 @@ const SECTIONS = [
     glyph: "edit",
     // TODO: real Throne / Ko-fi URLs once they exist.
     items: [
+      { Icon: BoxIcon, label: "Commissions", href: "#/commissions" },
       { icon: "throne", label: "Throne", href: "#" },
       { icon: "kofi", label: "Ko-fi", href: "#" },
     ],
@@ -249,13 +253,18 @@ export default function Home({ onNavigate }) {
                         className="home__drop-item"
                         data-brand={item.icon}
                         href={item.href}
-                        target="_blank"
-                        rel="noreferrer noopener"
+                        {...(item.href.startsWith("#/")
+                          ? {}
+                          : { target: "_blank", rel: "noreferrer noopener" })}
                       >
-                        <BrandIcon
-                          name={item.icon}
-                          className="home__drop-icon"
-                        />
+                        {item.Icon ? (
+                          <item.Icon className="home__drop-icon" />
+                        ) : (
+                          <BrandIcon
+                            name={item.icon}
+                            className="home__drop-icon"
+                          />
+                        )}
                         <span className="home__drop-label">{item.label}</span>
                       </a>
                     </li>

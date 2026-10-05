@@ -1,0 +1,595 @@
+@use 'sass:math';
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+@use '../../styles/frame' as *;
+
+// ---------------------------------------------------------------------------
+// Commissions — Figma node 1169:545.
+//
+// Same cu() unit as Home and the Art Archive, so the corner marks land on the
+// same squares through the page transition. Other numbers are literal design
+// pixels off the 1920-wide frame, with rem floors on the type.
+// ---------------------------------------------------------------------------
+
+.commissions {
+  --cu: clamp(0.58px, #{math.div(100, $frame-w)}vw, 1.4px);
+  --corner: #{cu(56)};
+  --icon: #{cu(24)};
+  --body: max(#{cu(14)}, 0.8125rem);
+
+  position: relative;
+  min-height: 100svh;
+  background-color: var(--c-surface);
+  background-image: var(--grain);
+  color: var(--c-ink-strong);
+}
+
+.commissions__corner {
+  position: fixed;
+  z-index: 3;
+  width: var(--corner);
+  height: var(--corner);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: $accent;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+
+  &:hover {
+    filter: brightness(1.18);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--c-ink);
+    outline-offset: 3px;
+  }
+
+  &--tl {
+    left: 0;
+    top: 0;
+    view-transition-name: corner-tl;
+  }
+
+  &--br {
+    right: 0;
+    top: calc(100svh - var(--corner));
+    view-transition-name: corner-br;
+  }
+}
+
+.commissions__corner-icon {
+  width: var(--icon);
+  height: var(--icon);
+
+  &--back {
+    transform: rotate(180deg);
+  }
+}
+
+// Info column from x=152; the viewer's right edge sits 296 from the frame's.
+.commissions__content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: cu(80);
+  padding: cu(107) cu(296) cu(120) cu(152);
+}
+
+.commissions__info {
+  flex: none;
+  width: cu(651);
+}
+
+// "⬡ - Commissions": the 48px box, then the copy 42.7px after it.
+.commissions__title {
+  display: flex;
+  align-items: center;
+  gap: cu(42.7);
+  font-size: max(#{cu(51.59)}, 1.75rem);
+  font-weight: 300;
+  line-height: normal;
+}
+
+.commissions__title-icon {
+  flex: none;
+  width: max(#{cu(48)}, 1.75rem);
+  height: max(#{cu(48)}, 1.75rem);
+  color: $accent;
+}
+
+// Red 38px mark with the arrow, then the white label box.
+.commissions__tag {
+  display: flex;
+  height: max(#{cu(38)}, 1.75rem);
+  margin-top: cu(59);
+  font-size: max(#{cu(16.8)}, 0.8125rem);
+  font-weight: 400;
+  line-height: normal;
+}
+
+.commissions__tag-mark {
+  flex: none;
+  aspect-ratio: 1;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: $accent;
+  color: #fff;
+}
+
+.commissions__tag-icon {
+  width: 42%;
+  height: 42%;
+}
+
+.commissions__tag-label {
+  display: grid;
+  place-items: center;
+  width: max(#{cu(171)}, 7rem);
+  background: #fff;
+  color: #000;
+}
+
+.commissions__copy {
+  max-width: cu(522);
+  margin-top: cu(38);
+  font-size: var(--body);
+  font-weight: 300;
+  line-height: normal;
+
+  &--note {
+    margin-top: cu(34);
+  }
+}
+
+.commissions__heading {
+  margin-bottom: cu(4);
+  font-size: max(#{cu(15)}, 0.875rem);
+  font-weight: 700;
+
+  .commissions__copy--note & {
+    margin-bottom: 0;
+    font-size: inherit;
+  }
+}
+
+.commissions__notes {
+  padding-left: cu(21);
+  list-style: disc;
+}
+
+// ---------------------------------------------------------------------------
+// Samples — a window of three front/back pairs between two chevrons.
+// ---------------------------------------------------------------------------
+.samples {
+  --pair-w: #{cu(186.5)};
+  --face-w: #{cu(166.1)};
+
+  margin-top: cu(40);
+}
+
+.samples__label {
+  text-align: center;
+  font-size: var(--body);
+  font-weight: 700;
+  line-height: normal;
+}
+
+.samples__row {
+  display: flex;
+  align-items: center;
+  margin-top: cu(30);
+  margin-left: cu(-13);
+}
+
+.samples__nav {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: max(#{cu(48)}, 2rem);
+  height: max(#{cu(48)}, 2rem);
+  padding: 0;
+  color: var(--c-ink-strong);
+  cursor: pointer;
+  transition: opacity $duration-fast ease-out, transform $duration-fast ease-out;
+
+  &:first-child {
+    margin-right: cu(-5);
+  }
+
+  &:last-child {
+    margin-left: cu(-5);
+  }
+
+  &:hover:not(:disabled) {
+    color: $accent;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.9);
+  }
+
+  &:disabled {
+    opacity: 0.2;
+    cursor: default;
+  }
+
+  @include focus-ring;
+}
+
+.samples__chevron {
+  width: 100%;
+  height: 100%;
+}
+
+// Wide enough for three pairs; the room above and below lets a lifted pair
+// and its focus ring show.
+.samples__window {
+  width: calc(var(--pair-w) * 3);
+  padding-block: cu(12);
+  overflow: hidden;
+}
+
+.samples__track {
+  display: flex;
+  transform: translateX(calc(var(--pair-w) * var(--start) * -1));
+  transition: transform $duration-slow $ease-out;
+}
+
+.samples__item {
+  flex: none;
+  width: var(--pair-w);
+}
+
+// The front sits 14.5 down; the back is laid over it 20.74 to the right.
+.sample {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: cu(241);
+  padding: 0;
+  cursor: pointer;
+
+  @include focus-ring;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: cu(20.74);
+    right: 0;
+    bottom: cu(-10);
+    height: 2px;
+    background: $accent;
+    transform: scaleX(0);
+    transition: transform $duration-med $ease-out;
+  }
+
+  &.is-selected::after {
+    transform: scaleX(1);
+  }
+}
+
+.sample__face {
+  position: absolute;
+  width: var(--face-w);
+  aspect-ratio: 166.1 / 226.5;
+  object-fit: contain;
+  transition: transform $duration-med $ease-out;
+
+  &--front {
+    left: 0;
+    top: cu(14.5);
+  }
+
+  &--back {
+    left: cu(20.74);
+    top: 0;
+  }
+}
+
+.sample:hover,
+.sample.is-selected {
+  .sample__face--front {
+    transform: translate(#{cu(-6)}, #{cu(2)}) rotate(-3deg);
+  }
+
+  .sample__face--back {
+    transform: translate(#{cu(4)}, #{cu(-6)}) rotate(2deg);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Viewer — the selected card, 530 x 723, the 3D switch under it.
+// ---------------------------------------------------------------------------
+.viewer {
+  flex: none;
+  width: cu(530);
+  margin-top: cu(61);
+}
+
+.viewer__slot {
+  position: relative;
+  aspect-ratio: 530 / 723;
+}
+
+// The CSS 3D card. The stage is the drag surface and the camera; the card
+// is laid out at its image's proportions and turned by CardViewer.jsx.
+.viewer__stage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  perspective: 1800px;
+  cursor: grab;
+  // Sideways drags turn the card; vertical swipes still scroll the page.
+  touch-action: pan-y;
+  user-select: none;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  @include focus-ring;
+}
+
+.card3d {
+  position: relative;
+  height: 100%;
+  max-width: 100%;
+  aspect-ratio: var(--ar, 530 / 723);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+// The card's edge: paper-white sheets stacked through its thickness.
+.card3d__paper {
+  position: absolute;
+  background: #f4f1ea;
+  transform: translateZ(var(--z));
+}
+
+.card3d__face {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(var(--z));
+  backface-visibility: hidden;
+
+  &--turned {
+    transform: rotateY(180deg) translateZ(var(--z));
+  }
+}
+
+.card3d__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+// A soft light that slides over the art as the card turns, clipped to the
+// card by the image's alpha (mask set inline).
+.card3d__glare {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--glare-x, 50%) var(--glare-y, 50%),
+    rgba(255, 255, 255, 0.55),
+    rgba(255, 255, 255, 0) 55%
+  );
+  mask-size: 100% 100%;
+  mix-blend-mode: soft-light;
+  opacity: var(--glare, 0);
+  pointer-events: none;
+}
+
+// The flat card: both faces in one cell, back to back.
+.flat {
+  display: grid;
+  // One cell exactly the slot's size; without it the cell grows to the
+  // image, and a taller card (Dia) spills down over the controls.
+  grid-template: 100% / 100%;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  perspective: 1600px;
+  cursor: pointer;
+
+  > * {
+    grid-area: 1 / 1;
+  }
+
+  @include focus-ring;
+}
+
+.flat__face {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  backface-visibility: hidden;
+  transition: transform 700ms $ease-out;
+
+  &--front {
+    transform: rotateY(180deg);
+  }
+
+  .is-flipped & {
+    transform: rotateY(180deg);
+  }
+
+  .is-flipped &--front {
+    transform: rotateY(360deg);
+  }
+
+}
+
+// Above the canvas, whose overhang reaches down over this row.
+.viewer__controls {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-top: cu(35);
+}
+
+.viewer__hint {
+  grid-column: 2;
+  font-size: var(--body);
+  font-weight: 300;
+  line-height: normal;
+  white-space: nowrap;
+  // Sized to the longer of the two hints, so the 3D button stays put when
+  // the hint changes under the pointer.
+  min-width: 28ch;
+  text-align: center;
+}
+
+.viewer__toggle {
+  justify-self: start;
+  width: max(#{cu(38)}, 1.75rem);
+  height: max(#{cu(38)}, 1.75rem);
+  margin-left: cu(28);
+  padding: 0;
+  background: #787878;
+  color: #fff;
+  font-size: var(--body);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color $duration-fast ease-out;
+
+  &.is-on {
+    background: $accent;
+  }
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.18);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  @include focus-ring;
+}
+
+// ---------------------------------------------------------------------------
+// Build-in, driven by useReveal (.is-in). Fills backwards only.
+// ---------------------------------------------------------------------------
+[data-reveal]:not(.is-in) {
+  opacity: 0;
+}
+
+.commissions__title.is-in {
+  .commissions__title-icon {
+    animation: commissions-spin 900ms var(--reveal-delay) $ease-out backwards;
+  }
+
+  span {
+    animation: commissions-wipe 800ms calc(var(--reveal-delay) + 120ms) $ease-out backwards;
+  }
+}
+
+.commissions__tag.is-in {
+  animation: commissions-wipe 560ms var(--reveal-delay) $ease-out backwards;
+}
+
+.commissions__copy.is-in,
+.samples.is-in {
+  animation: commissions-rise 700ms var(--reveal-delay) $ease-out backwards;
+}
+
+.viewer.is-in {
+  animation: commissions-rise 900ms var(--reveal-delay) $ease-out backwards;
+}
+
+@keyframes commissions-spin {
+  from {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.6);
+  }
+}
+
+@keyframes commissions-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+@keyframes commissions-rise {
+  from {
+    opacity: 0;
+    transform: translateY(#{cu(28)});
+  }
+}
+
+// Stacked: the info, then the viewer under it at the full column width.
+@media (max-width: $bp-lg), (max-aspect-ratio: 1 / 1) {
+  .commissions {
+    --corner: clamp(2.1rem, 5.6vw, 3.15rem);
+    --gutter: #{$space-6};
+  }
+
+  .commissions__content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: $space-12;
+    padding: calc(var(--corner) + #{$space-6}) var(--gutter) $space-16;
+  }
+
+  .commissions__info {
+    width: auto;
+  }
+
+  .commissions__title {
+    gap: $space-3;
+  }
+
+  .commissions__tag,
+  .commissions__copy,
+  .samples {
+    margin-top: $space-6;
+  }
+
+  .commissions__copy {
+    max-width: 40rem;
+  }
+
+  .samples {
+    --pair-w: min(#{cu(186.5)} * 1.6, (100vw - 2 * var(--gutter) - 4rem) / 3);
+    --face-w: calc(var(--pair-w) * 0.89);
+  }
+
+  .samples__row {
+    justify-content: center;
+    margin-left: 0;
+  }
+
+  .sample {
+    height: calc(var(--face-w) * 1.451);
+  }
+
+  .viewer {
+    width: min(100%, 26rem);
+    margin: 0 auto;
+  }
+}
+
+@include reduced-motion {
+  .is-in,
+  .is-in * {
+    animation: none !important;
+  }
+
+  [data-reveal]:not(.is-in) {
+    opacity: 1;
+  }
+
+  .samples__track,
+  .sample__face,
+  .flat__face {
+    transition: none;
+  }
+}
